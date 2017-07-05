@@ -34,9 +34,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONTokener;
 
-/**
- * Root resource (exposed at "myresource" path)
- */
 @Path("/item")
 @Produces(MediaType.APPLICATION_JSON)
 public class ItemResource {
@@ -87,13 +84,6 @@ public class ItemResource {
 		JSONArray items = new JSONArray();
 		int rowCount=0;
 		while (resultSet.next()) {
-			/*
-			items.put(new JSONObject()
-							.put("SKU", resultSet.getInt("SKU"))
-							.put("Name", resultSet.getString("ItemName"))
-							.put("Description", resultSet.getString("ItemDescription"))
-							.put("Thumbnail", resultSet.getString("ItemThumbnails")));
-			*/
 			JSONObject item= new JSONObject()
 					.put("SKU", resultSet.getInt("SKU"));
 			String name = resultSet.getString("ItemName");
