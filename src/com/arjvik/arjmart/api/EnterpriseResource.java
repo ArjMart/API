@@ -196,6 +196,7 @@ public class EnterpriseResource {
 		}catch(JSONException e){
 			statement.setNull(2, Types.VARCHAR);
 		}
+		statement.executeUpdate();
 		JSONObject json = new JSONObject()
 				.put("sucess","added enterprise successfuly")
 				.put("ID", ID)

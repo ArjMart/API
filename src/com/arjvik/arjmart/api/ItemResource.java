@@ -110,6 +110,47 @@ public class ItemResource {
 	}
 	
 	@GET
+	public Response getSearch(@QueryParam("query") String query, @DefaultValue("-1") @QueryParam("limit") int limit) throws SQLException {
+		Connection connection = getConnection();
+		PreparedStatement statement = connection.prepareStatement("select * from ItemMaster where ItemName like ? escape '|' limit ?");
+		String escapedQuery="%"+query.replace("%", "|%").replace("_", "|_").replace(' ', '%')+"%";
+		statement.setString(1, escapedQuery);
+		if(limit!=-1){
+			statement.setInt(2, Math.min(Math.max(limit, 0), MAX_RECORDS));
+		}else{
+			statement.setInt(2, MAX_RECORDS);
+		}
+		ResultSet resultSet = statement.executeQuery();
+		JSONObject json = new JSONObject();
+		JSONArray items = new JSONArray();
+		int rowCount=0;
+		while (resultSet.next()) {
+			JSONObject item= new JSONObject()
+					.put("SKU", resultSet.getInt("SKU"));
+			String name = resultSet.getString("ItemName");
+			if(name!=null)
+				item.put("Name", name);
+			else
+				item.put("Name",JSONObject.NULL);
+			String description = resultSet.getString("ItemDescription");
+			if(description!=null)
+				item.put("Description", description);
+			else
+				item.put("Description",JSONObject.NULL);
+			String thumbnail = resultSet.getString("ItemThumbnails");
+			if(thumbnail!=null)
+				item.put("Thumbnail", thumbnail);
+			else
+				item.put("Thumbnail",JSONObject.NULL);
+			items.put(item);
+			rowCount++;
+		}
+		json.put("items", items)
+			.put("count", rowCount);
+		return Response.ok(json.toString()).build();
+	}
+	
+	@GET
 	@Path("{SKU}")
 	public Response getItem(@PathParam("SKU") int SKU) throws SQLException{
 		Connection connection = getConnection();
