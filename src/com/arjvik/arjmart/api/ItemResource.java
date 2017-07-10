@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -71,7 +72,9 @@ public class ItemResource {
 	}
 	
 	@GET
-	public Response getAll(@DefaultValue("-1") @QueryParam("limit") int limit) throws SQLException {
+	public Response getAll(@DefaultValue("-1") @QueryParam("limit") int limit, @QueryParam("query") String query) throws SQLException {
+		if(query!=null)
+			return getSearch(limit,query);
 		Connection connection = getConnection();
 		PreparedStatement statement = connection.prepareStatement("select * from ItemMaster limit ?");
 		if(limit!=-1){
@@ -109,8 +112,7 @@ public class ItemResource {
 		return Response.ok(json.toString()).build();
 	}
 	
-	@GET
-	public Response getSearch(@QueryParam("query") String query, @DefaultValue("-1") @QueryParam("limit") int limit) throws SQLException {
+	public Response getSearch(int limit, String query) throws SQLException {
 		Connection connection = getConnection();
 		PreparedStatement statement = connection.prepareStatement("select * from ItemMaster where ItemName like ? escape '|' limit ?");
 		String escapedQuery="%"+query.replace("%", "|%").replace("_", "|_").replace(' ', '%')+"%";
@@ -360,6 +362,183 @@ public class ItemResource {
 		JSONObject json = new JSONObject()
 				.put("sucess", "item deleted successfuly")
 				.put("SKU", SKU);
+		return Response.ok().entity(json.toString()).build();
+	}
+	
+	@GET
+	@Path("{SKU}/attribute")
+	public Response getAllAttribute(@PathParam("SKU") int SKU) throws SQLException{
+		Connection connection = getConnection();
+		PreparedStatement statement = connection.prepareStatement("select * from ItemAttributeMaster where SKU=?");
+		statement.setInt(1, SKU);
+		ResultSet resultSet = statement.executeQuery();
+		JSONObject json = new JSONObject();
+		JSONArray attributes = new JSONArray();
+		int rowCount=0;
+		while (resultSet.next()) {
+			JSONObject attribute= new JSONObject()
+					.put("ID", resultSet.getInt("ItemAttributeID"));
+			String color = resultSet.getString("Color");
+			if(color!=null)
+				attribute.put("Color", color);
+			else
+				attribute.put("Color",JSONObject.NULL);
+			String size = resultSet.getString("Size");
+			if(size!=null)
+				attribute.put("Size", size);
+			else
+				attribute.put("size",JSONObject.NULL);
+			
+			attributes.put(attribute);
+			rowCount++;
+		}
+		json.put("attributes", attributes)
+			.put("count", rowCount);
+		return Response.ok(json.toString()).build();
+	}
+	
+	@PUT
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("{SKU}/attribute/{ID}")
+	public Response putAddAttribute(String body, @PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException{
+		Connection connection = getConnection();
+		PreparedStatement statement = connection.prepareStatement("insert into ItemAttributeMaster (ItemAttributeID,SKU,Color,Size) values (?,?,?,?)");
+		PreparedStatement idCheck = connection.prepareStatement("select count(*) from ItemAttributeMaster where ItemAttributeID=?");
+		idCheck.setInt(1, ID);
+		ResultSet results = idCheck.executeQuery();
+		results.next();
+		if(results.getInt(1)==1){
+			return postEditAttribute(body,SKU,ID);
+		}
+		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
+		statement.setInt(1, ID);
+		statement.setInt(2, SKU);
+		try{
+			String name = jsonObject.getString("Color");
+			statement.setString(3, name);
+		}catch(JSONException e){
+			statement.setNull(3, Types.VARCHAR);
+		}
+		try{
+			String name = jsonObject.getString("Size");
+			statement.setString(4, name);
+		}catch(JSONException e){
+			statement.setNull(4, Types.VARCHAR);
+		}
+		statement.executeUpdate();
+		JSONObject json = new JSONObject()
+				.put("sucess","added attribute successfuly")
+				.put("ID", ID)
+				.put("URI", "/item/"+SKU+"/attribute/"+ID);
+		return Response.created(URI.create("/item/"+SKU+"/attribute/"+ID)).entity(json.toString()).build();
+	}
+
+	@PUT
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("{SKU}/attribute")
+	public Response putAddAttributeNoSKU(String body, @PathParam("SKU") int SKU) throws SQLException{
+		Connection connection = getConnection();
+		PreparedStatement statement = connection.prepareStatement("insert into ItemAttributeMaster (SKU,Color,Size) values (?,?,?)",Statement.RETURN_GENERATED_KEYS);
+		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
+		statement.setInt(1, SKU);
+		try{
+			String name = jsonObject.getString("Color");
+			statement.setString(2, name);
+		}catch(JSONException e){
+			statement.setNull(2, Types.VARCHAR);
+		}
+		try{
+			String name = jsonObject.getString("Size");
+			statement.setString(3, name);
+		}catch(JSONException e){
+			statement.setNull(3, Types.VARCHAR);
+		}
+		statement.executeUpdate();
+		ResultSet keys = statement.getGeneratedKeys();
+		keys.next();
+		int ID = keys.getInt(1);
+		JSONObject json = new JSONObject()
+				.put("sucess","added attribute successfuly")
+				.put("ID", ID)
+				.put("URI", "/item/"+SKU+"/attribute/"+ID);
+		return Response.created(URI.create("/item/"+SKU+"/attribute/"+ID)).entity(json.toString()).build();
+	}
+	
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("{SKU}/attribute/{ID}")
+	public Response postEditAttribute(String body, @PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException{
+		Connection connection = getConnection();
+		PreparedStatement idCheck = connection.prepareStatement("select count(*) from ItemAttributeMaster where ItemAttributeID=?");
+		idCheck.setInt(1, ID);
+		ResultSet results = idCheck.executeQuery();
+		results.next();
+		if(results.getInt(1)!=1){
+			JSONObject json = new JSONObject()
+					.put("error", "ID not found")
+					.put("token", ID);
+			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+		}
+		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
+		try{
+			String color = jsonObject.getString("Color");
+			PreparedStatement statement = connection.prepareStatement("update ItemAttributeMaster set Color=? where ItemAttributeID=?");
+			statement.setString(1, color);
+			statement.setInt(2, ID);
+			statement.executeUpdate();
+		}catch(JSONException e){
+			if(jsonObject.has("Color")){
+				PreparedStatement statement = connection.prepareStatement("update ItemAttributeMaster set Color=? where ItemAttributeID=?");
+				statement.setNull(1, Types.VARCHAR);
+				statement.setInt(2, ID);
+				statement.executeUpdate();
+			}
+		}
+		try{
+			String size = jsonObject.getString("Size");
+			PreparedStatement statement = connection.prepareStatement("update ItemAttributeMaster set Size=? where ItemAttributeID=?");
+			statement.setString(1, size);
+			statement.setInt(2, ID);
+			statement.executeUpdate();
+		}catch(JSONException e){
+			if(jsonObject.has("Size")){
+				PreparedStatement statement = connection.prepareStatement("update ItemAttributeMaster set Size=? where ItemAttributeID=?");
+				statement.setNull(1, Types.VARCHAR);
+				statement.setInt(2, ID);
+				statement.executeUpdate();
+			}
+		}
+		JSONObject json = new JSONObject()
+				.put("sucess","updated attribute successfuly")
+				.put("ID", ID)
+				.put("URI", "/item/"+SKU+"/attribute/"+ID);
+		return Response.ok().entity(json.toString()).build();
+	}
+	
+	@DELETE
+	@Path("{SKU}/attribute/{ID}")
+	public Response deleteAttribute(@PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException{
+		Connection connection = getConnection();
+		PreparedStatement statement = connection.prepareStatement("delete from ItemMaster where SKU=? and ItemAttributeID=?");
+		statement.setInt(1, SKU);
+		statement.setInt(2, ID);
+		statement.executeUpdate();
+		JSONObject json = new JSONObject()
+				.put("sucess", "attribute deleted successfuly")
+				.put("ID", ID);
+		return Response.ok().entity(json.toString()).build();
+	}
+	
+	@DELETE
+	@Path("{SKU}/attribute/{ID}")
+	public Response deleteAttributeNoSKU(@PathParam("ID") int ID) throws SQLException{
+		Connection connection = getConnection();
+		PreparedStatement statement = connection.prepareStatement("delete from ItemMaster where ItemAttributeID=?");
+		statement.setInt(1, ID);
+		statement.executeUpdate();
+		JSONObject json = new JSONObject()
+				.put("sucess", "attribute deleted successfuly")
+				.put("ID", ID);
 		return Response.ok().entity(json.toString()).build();
 	}
 }

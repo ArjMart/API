@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -197,6 +198,29 @@ public class EnterpriseResource {
 			statement.setNull(2, Types.VARCHAR);
 		}
 		statement.executeUpdate();
+		JSONObject json = new JSONObject()
+				.put("sucess","added enterprise successfuly")
+				.put("ID", ID)
+				.put("URI", "/enterprise/"+ID);
+		return Response.created(URI.create("/enterprise/"+ID)).entity(json.toString()).build();
+	}
+	
+	@PUT
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response putAddEnterpriseNoID(String body) throws SQLException{
+		Connection connection = getConnection();
+		PreparedStatement statement = connection.prepareStatement("insert into EnterpriseMaster (EnterpriseName) values (?)",Statement.RETURN_GENERATED_KEYS);
+		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
+		try{
+			String name = jsonObject.getString("Name");
+			statement.setString(1, name);
+		}catch(JSONException e){
+			statement.setNull(1, Types.VARCHAR);
+		}
+		statement.executeUpdate();
+		ResultSet keys = statement.getGeneratedKeys();
+		keys.next();
+		int ID = keys.getInt(1);
 		JSONObject json = new JSONObject()
 				.put("sucess","added enterprise successfuly")
 				.put("ID", ID)
