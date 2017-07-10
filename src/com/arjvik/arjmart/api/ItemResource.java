@@ -397,6 +397,93 @@ public class ItemResource {
 		return Response.ok(json.toString()).build();
 	}
 	
+	@GET
+	@Path("{SKU}/attribute/{ID}")
+	public Response getAttribute(@PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException{
+		Connection connection = getConnection();
+		PreparedStatement statement = connection.prepareStatement("select * from ItemAttributeMaster where ItemAttributeID=?");
+		statement.setInt(1, ID);
+		ResultSet resultSet = statement.executeQuery();
+		JSONObject json = new JSONObject()
+				.put("ID", resultSet.getInt("ItemAttributeID"))
+				.put("SKU", resultSet.getInt("SKU"));
+		String color = resultSet.getString("Color");
+		if(color!=null)
+			json.put("Color", color);
+		else
+			json.put("Color",JSONObject.NULL);
+		String size = resultSet.getString("Size");
+		if(size!=null)
+			json.put("Size", size);
+		else
+			json.put("size",JSONObject.NULL);
+		return Response.ok(json.toString()).build();
+	}
+	
+	@GET
+	@Path("attribute/{ID}")
+	public Response getAttribute0(@PathParam("ID") int ID) throws SQLException{
+		return getAttribute(-1,ID);
+	}
+	
+	@GET
+	@Path("{SKU}/attribute/{ID}/{Property}")
+	public Response getAttributeProperty(@PathParam("SKU") int SKU, @PathParam("ID") int ID, @PathParam("Property") String property) throws SQLException{
+		Connection connection = getConnection();
+		String sqlItemProperty;
+		switch(property.toLowerCase()){
+		case "sku":
+			sqlItemProperty = "SKU";
+			break;
+		case "color":
+			sqlItemProperty = "Color";
+			break;
+		case "size":
+			sqlItemProperty = "Size";
+			break;
+		default:
+			JSONObject json = new JSONObject()
+					.put("error", "invalid property")
+					.put("token", property)
+					.put("expected", 
+							new JSONArray()
+								.put("SKU")
+								.put("Color")
+								.put("Size"));
+			return Response.status(Status.BAD_REQUEST).entity(json.toString()).build();
+		}
+		PreparedStatement statement = connection.prepareStatement("select * from ItemAttributeMaster where ItemAttributeID=?");
+		statement.setInt(1, ID);
+		ResultSet resultSet = statement.executeQuery();
+		if(!resultSet.next()){
+			JSONObject json = new JSONObject()
+					.put("error", "ID not found")
+					.put("token", ID);
+			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+		}
+		JSONObject json = new JSONObject();
+		if(property.equalsIgnoreCase("SKU")){
+			int value = resultSet.getInt(sqlItemProperty);
+			if(value!=0)
+				json.put(property, value);
+			else
+				json.put(property, JSONObject.NULL);
+		}else{
+			String value = resultSet.getString(sqlItemProperty);
+			if(value!=null)
+				json.put(property, value);
+			else
+				json.put(property, JSONObject.NULL);
+		}
+		return Response.ok().entity(json.toString()).build();
+	}
+	
+	@GET
+	@Path("attribute/{ID}/{Property}")
+	public Response getAttributeProperty0(@PathParam("ID") int ID, @PathParam("Property") String property) throws SQLException{
+		return getAttributeProperty(-1, ID, property);
+	}
+	
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attribute/{ID}")
@@ -436,7 +523,7 @@ public class ItemResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attribute")
-	public Response putAddAttributeNoSKU(String body, @PathParam("SKU") int SKU) throws SQLException{
+	public Response putAddAttributeNoID(String body, @PathParam("SKU") int SKU) throws SQLException{
 		Connection connection = getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into ItemAttributeMaster (SKU,Color,Size) values (?,?,?)",Statement.RETURN_GENERATED_KEYS);
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
@@ -510,18 +597,27 @@ public class ItemResource {
 		}
 		JSONObject json = new JSONObject()
 				.put("sucess","updated attribute successfuly")
-				.put("ID", ID)
-				.put("URI", "/item/"+SKU+"/attribute/"+ID);
+				.put("ID", ID);
+		if(SKU!=-1)
+			json.put("URI", "/item/"+SKU+"/attribute/"+ID);
+		else
+			json.put("URI", "/item/attribute/"+ID);
 		return Response.ok().entity(json.toString()).build();
+	}
+	
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("attribute/{ID}")
+	public Response postEditAttribute0(String body, @PathParam("ID") int ID) throws SQLException{
+		return postEditAttribute(body,-1,ID);
 	}
 	
 	@DELETE
 	@Path("{SKU}/attribute/{ID}")
 	public Response deleteAttribute(@PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException{
 		Connection connection = getConnection();
-		PreparedStatement statement = connection.prepareStatement("delete from ItemMaster where SKU=? and ItemAttributeID=?");
-		statement.setInt(1, SKU);
-		statement.setInt(2, ID);
+		PreparedStatement statement = connection.prepareStatement("delete from ItemAttributeMaster where ItemAttributeID=?");
+		statement.setInt(1, ID);
 		statement.executeUpdate();
 		JSONObject json = new JSONObject()
 				.put("sucess", "attribute deleted successfuly")
@@ -530,15 +626,8 @@ public class ItemResource {
 	}
 	
 	@DELETE
-	@Path("{SKU}/attribute/{ID}")
-	public Response deleteAttributeNoSKU(@PathParam("ID") int ID) throws SQLException{
-		Connection connection = getConnection();
-		PreparedStatement statement = connection.prepareStatement("delete from ItemMaster where ItemAttributeID=?");
-		statement.setInt(1, ID);
-		statement.executeUpdate();
-		JSONObject json = new JSONObject()
-				.put("sucess", "attribute deleted successfuly")
-				.put("ID", ID);
-		return Response.ok().entity(json.toString()).build();
+	@Path("attribute/{ID}")
+	public Response deleteAttribute0(@PathParam("ID") int ID) throws SQLException{
+		return deleteAttribute(-1,ID);
 	}
 }
