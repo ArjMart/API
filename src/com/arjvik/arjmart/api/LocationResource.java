@@ -199,7 +199,7 @@ public class LocationResource {
 		idCheck.setInt(1, ID);
 		ResultSet results = idCheck.executeQuery();
 		results.next();
-		if(results.getInt(1)==1){
+		if(results.getInt(1)!=1){
 			return postEditLocation(body,ID);
 		}
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
