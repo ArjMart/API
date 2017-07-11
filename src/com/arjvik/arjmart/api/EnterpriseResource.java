@@ -71,6 +71,11 @@ public class EnterpriseResource {
 		}
 	}
 	
+	private Connection getConnection() throws SQLException{
+		Connection connection = DriverManager.getConnection(DB_URL,DB_USER,DB_PW);
+		return connection;
+	}
+	
 	@GET
 	public Response getAll(@DefaultValue("-1") @QueryParam("limit") int limit) throws SQLException {
 		Connection connection = getConnection();
@@ -121,11 +126,6 @@ public class EnterpriseResource {
 		else
 			json.put("Name",JSONObject.NULL);
 		return Response.ok().entity(json.toString()).build();
-	}
-	
-	private Connection getConnection() throws SQLException{
-		Connection connection = DriverManager.getConnection(DB_URL,DB_USER,DB_PW);
-		return connection;
 	}
 	
 	@GET

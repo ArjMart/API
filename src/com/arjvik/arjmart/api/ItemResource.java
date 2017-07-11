@@ -71,6 +71,11 @@ public class ItemResource {
 		}
 	}
 	
+	private Connection getConnection() throws SQLException{
+		Connection connection = DriverManager.getConnection(DB_URL,DB_USER,DB_PW);
+		return connection;
+	}
+	
 	@GET
 	public Response getAll(@DefaultValue("-1") @QueryParam("limit") int limit, @QueryParam("query") String query) throws SQLException {
 		if(query!=null)
@@ -183,11 +188,6 @@ public class ItemResource {
 		else
 			json.put("Thumbnail",JSONObject.NULL);
 		return Response.ok().entity(json.toString()).build();
-	}
-	
-	private Connection getConnection() throws SQLException{
-		Connection connection = DriverManager.getConnection(DB_URL,DB_USER,DB_PW);
-		return connection;
 	}
 	
 	@GET

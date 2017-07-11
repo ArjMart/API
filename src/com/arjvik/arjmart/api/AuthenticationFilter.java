@@ -18,7 +18,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 		JSONObject json = new JSONObject()
 				.put("error", "insufficient authentication")
 				.put("token", requestContext.getHeaderString("X-API-Key"));
-		requestContext.abortWith(Response.status(Status.UNAUTHORIZED).entity(json.toString()).build());
+		requestContext.abortWith(Response.status(Status.UNAUTHORIZED).entity(json.toString()).header("WWW-Authenticate", "X-API-Key").build());
 	}
 
 }
