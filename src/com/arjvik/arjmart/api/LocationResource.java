@@ -246,7 +246,7 @@ public class LocationResource {
 			eidCheck.setInt(1, eid);
 			ResultSet eidresults = eidCheck.executeQuery();
 			eidresults.next();
-			if(eidresults.getInt(1)==1){
+			if(eidresults.getInt(1)!=1){
 				JSONObject json = new JSONObject()
 						.put("error", "Enterprise ID not found")
 						.put("token", eid);
