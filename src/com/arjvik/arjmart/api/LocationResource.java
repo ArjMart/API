@@ -192,7 +192,7 @@ public class LocationResource {
 	@Path("{ID}")
 	public Response putAddLocation(String body, @PathParam("ID") int ID) throws SQLException{
 		Connection connection = getConnection();
-		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (LocationID,EnterpriseID,EnterpriseName) values (?,?,?)");
+		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (LocationID,EnterpriseID,Address) values (?,?,?)");
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from LocationMaster where LocationID=?");
 		idCheck.setInt(1, ID);
 		ResultSet results = idCheck.executeQuery();
@@ -238,7 +238,7 @@ public class LocationResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response putAddLocationNoID(String body) throws SQLException{
 		Connection connection = getConnection();
-		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (EnterpriseID,EnterpriseName) values (?,?)",Statement.RETURN_GENERATED_KEYS);
+		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (EnterpriseID,Address) values (?,?)",Statement.RETURN_GENERATED_KEYS);
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		try{
 			int eid = jsonObject.getInt("Enterprise-ID");
