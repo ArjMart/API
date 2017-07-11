@@ -92,11 +92,12 @@ public class LocationResource {
 		while (resultSet.next()) {
 			JSONObject location = new JSONObject()
 					.put("ID", resultSet.getInt("LocationID"));
-			String eid = resultSet.getString("EnterpriseID");
-			if(eid!=null)
-				location.put("Enterprise-ID", eid);
+			int eid = resultSet.getInt("EnterpriseID");
+			json.put("Enterprise-ID", eid);
+			if(eid!=0)
+				json.put("Enterprise-ID", eid);
 			else
-				location.put("Enterprise-ID",JSONObject.NULL);
+				json.put("Enterprise-ID", JSONObject.NULL);
 			String address = resultSet.getString("Address");
 			if(address!=null)
 				location.put("Address", address);
@@ -125,11 +126,12 @@ public class LocationResource {
 		}
 		JSONObject json = new JSONObject()
 				.put("ID", ID);
-		String eid = resultSet.getString("EnterpriseID");
-		if(eid!=null)
+		int eid = resultSet.getInt("EnterpriseID");
+		json.put("Enterprise-ID", eid);
+		if(eid!=0)
 			json.put("Enterprise-ID", eid);
 		else
-			json.put("Enterprise-ID",JSONObject.NULL);
+			json.put("Enterprise-ID", JSONObject.NULL);
 		String address = resultSet.getString("Address");
 		if(address!=null)
 			json.put("Address", address);
