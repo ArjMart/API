@@ -93,11 +93,11 @@ public class LocationResource {
 			JSONObject location = new JSONObject()
 					.put("ID", resultSet.getInt("LocationID"));
 			int eid = resultSet.getInt("EnterpriseID");
-			json.put("Enterprise-ID", eid);
+			location.put("Enterprise-ID", eid);
 			if(eid!=0)
-				json.put("Enterprise-ID", eid);
+				location.put("Enterprise-ID", eid);
 			else
-				json.put("Enterprise-ID", JSONObject.NULL);
+				location.put("Enterprise-ID", JSONObject.NULL);
 			String address = resultSet.getString("Address");
 			if(address!=null)
 				location.put("Address", address);
