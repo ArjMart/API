@@ -52,7 +52,7 @@ public class LocationResource {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 		} catch (ClassNotFoundException e) {
-			logger.log(Level.SEVERE,"Error registering JDBC driver", e);
+			logger.log(Level.SEVERE, "Error registering JDBC driver", e);
 		}
 		try{
 			if(System.getProperties().containsKey("com.arjvik.arjmart.api.DB_PW")){
@@ -67,18 +67,13 @@ public class LocationResource {
 			}
 		} catch(FileNotFoundException e){
 			DB_PW=null;
-			logger.log(Level.SEVERE,"Error reading DB Password", e);
+			logger.log(Level.SEVERE, "Error reading DB Password", e);
 		}
-	}
-	
-	private Connection getConnection() throws SQLException{
-		Connection connection = DriverManager.getConnection(DB_URL,DB_USER,DB_PW);
-		return connection;
 	}
 	
 	@GET
 	public Response getAll(@DefaultValue("-1") @QueryParam("limit") int limit) throws SQLException {
-		Connection connection = getConnection();
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
 		PreparedStatement statement = connection.prepareStatement("select * from LocationMaster limit ?");
 		if(limit!=-1){
 			statement.setInt(1, Math.min(Math.max(limit, 0), MAX_RECORDS));
@@ -102,7 +97,7 @@ public class LocationResource {
 			if(address!=null)
 				location.put("Address", address);
 			else
-				location.put("Address",JSONObject.NULL);
+				location.put("Address", JSONObject.NULL);
 			locations.put(location);
 			rowCount++;
 		}
@@ -114,7 +109,7 @@ public class LocationResource {
 	@GET
 	@Path("{ID}")
 	public Response getLocation(@PathParam("ID") int ID) throws SQLException{
-		Connection connection = getConnection();
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
 		PreparedStatement statement = connection.prepareStatement("select * from LocationMaster where LocationID=?");
 		statement.setInt(1, ID);
 		ResultSet resultSet = statement.executeQuery();
@@ -136,14 +131,14 @@ public class LocationResource {
 		if(address!=null)
 			json.put("Address", address);
 		else
-			json.put("Address",JSONObject.NULL);
+			json.put("Address", JSONObject.NULL);
 		return Response.ok().entity(json.toString()).build();
 	}
 	
 	@GET
 	@Path("{ID}/{Property}")
 	public Response getProperty(@PathParam("ID") int ID, @PathParam("Property") String locationProperty) throws SQLException{
-		Connection connection = getConnection();
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
 		String sqlEnterpriseProperty;
 		switch(locationProperty.toLowerCase()){
 		case "id":
@@ -193,14 +188,14 @@ public class LocationResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
 	public Response putAddLocation(String body, @PathParam("ID") int ID) throws SQLException{
-		Connection connection = getConnection();
-		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (LocationID,EnterpriseID,Address) values (?,?,?)");
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (LocationID, EnterpriseID, Address) values (?, ?, ?)");
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from LocationMaster where LocationID=?");
 		idCheck.setInt(1, ID);
 		ResultSet results = idCheck.executeQuery();
 		results.next();
 		if(results.getInt(1)==1){
-			return postEditLocation(body,ID);
+			return postEditLocation(body, ID);
 		}
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		statement.setInt(1, ID);
@@ -230,7 +225,7 @@ public class LocationResource {
 		}
 		statement.executeUpdate();
 		JSONObject json = new JSONObject()
-				.put("sucess","added location successfuly")
+				.put("sucess", "added location successfuly")
 				.put("ID", ID)
 				.put("URI", "/location/"+ID);
 		return Response.created(URI.create("/location/"+ID)).entity(json.toString()).build();
@@ -239,8 +234,8 @@ public class LocationResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response putAddLocationNoID(String body) throws SQLException{
-		Connection connection = getConnection();
-		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (EnterpriseID,Address) values (?,?)",Statement.RETURN_GENERATED_KEYS);
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (EnterpriseID, Address) values (?, ?)", Statement.RETURN_GENERATED_KEYS);
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		try{
 			int eid = jsonObject.getInt("Enterprise-ID");
@@ -271,7 +266,7 @@ public class LocationResource {
 		keys.next();
 		int ID = keys.getInt(1);
 		JSONObject json = new JSONObject()
-				.put("sucess","added location successfuly")
+				.put("sucess", "added location successfuly")
 				.put("ID", ID)
 				.put("URI", "/location/"+ID);
 		return Response.created(URI.create("/location/"+ID)).entity(json.toString()).build();
@@ -281,7 +276,7 @@ public class LocationResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
 	public Response postEditLocation(String body, @PathParam("ID") int ID) throws SQLException {
-		Connection connection = getConnection();
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from LocationMaster where LocationID=?");
 		idCheck.setInt(1, ID);
 		ResultSet results = idCheck.executeQuery();
@@ -325,7 +320,7 @@ public class LocationResource {
 			}
 		}
 		JSONObject json = new JSONObject()
-				.put("sucess","updated location successfuly")
+				.put("sucess", "updated location successfuly")
 				.put("ID", ID)
 				.put("URI", "/location/"+ID);
 		return Response.ok().entity(json.toString()).build();
@@ -334,7 +329,7 @@ public class LocationResource {
 	@DELETE
 	@Path("{ID}")
 	public Response deleteEnterprise(@PathParam("ID") int ID) throws SQLException{
-		Connection connection = getConnection();
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
 		PreparedStatement statement = connection.prepareStatement("delete from LocationMaster where LocationID=?");
 		statement.setInt(1, ID);
 		statement.executeUpdate();

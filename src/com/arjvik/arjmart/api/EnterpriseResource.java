@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -39,8 +38,6 @@ import org.json.JSONTokener;
 @Produces(MediaType.APPLICATION_JSON)
 public class EnterpriseResource {
 	private static final int MAX_RECORDS = 100;
-	private final String DB_URL = "jdbc:mysql://db1.clwnpjvhytsb.us-west-2.rds.amazonaws.com:3306/arjmart",
-			DB_USER = "root";
 	private transient String DB_PW;
 	private static Logger logger;
 	@Context
@@ -52,7 +49,7 @@ public class EnterpriseResource {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 		} catch (ClassNotFoundException e) {
-			logger.log(Level.SEVERE,"Error registering JDBC driver", e);
+			logger.log(Level.SEVERE, "Error registering JDBC driver", e);
 		}
 		try{
 			if(System.getProperties().containsKey("com.arjvik.arjmart.api.DB_PW")){
@@ -67,18 +64,13 @@ public class EnterpriseResource {
 			}
 		} catch(FileNotFoundException e){
 			DB_PW=null;
-			logger.log(Level.SEVERE,"Error reading DB Password", e);
+			logger.log(Level.SEVERE, "Error reading DB Password", e);
 		}
-	}
-	
-	private Connection getConnection() throws SQLException{
-		Connection connection = DriverManager.getConnection(DB_URL,DB_USER,DB_PW);
-		return connection;
 	}
 	
 	@GET
 	public Response getAll(@DefaultValue("-1") @QueryParam("limit") int limit) throws SQLException {
-		Connection connection = getConnection();
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
 		PreparedStatement statement = connection.prepareStatement("select * from EnterpriseMaster limit ?");
 		if(limit!=-1){
 			statement.setInt(1, Math.min(Math.max(limit, 0), MAX_RECORDS));
@@ -96,7 +88,7 @@ public class EnterpriseResource {
 			if(name!=null)
 				enterprise.put("Name", name);
 			else
-				enterprise.put("Name",JSONObject.NULL);
+				enterprise.put("Name", JSONObject.NULL);
 			enterprises.put(enterprise);
 			rowCount++;
 		}
@@ -108,7 +100,7 @@ public class EnterpriseResource {
 	@GET
 	@Path("{ID}")
 	public Response getEnterprise(@PathParam("ID") int ID) throws SQLException{
-		Connection connection = getConnection();
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
 		PreparedStatement statement = connection.prepareStatement("select * from EnterpriseMaster where EnterpriseID=?");
 		statement.setInt(1, ID);
 		ResultSet resultSet = statement.executeQuery();
@@ -124,14 +116,14 @@ public class EnterpriseResource {
 		if(name!=null)
 			json.put("Name", name);
 		else
-			json.put("Name",JSONObject.NULL);
+			json.put("Name", JSONObject.NULL);
 		return Response.ok().entity(json.toString()).build();
 	}
 	
 	@GET
 	@Path("{ID}/{Property}")
 	public Response getProperty(@PathParam("ID") int ID, @PathParam("Property") String enterpriseProperty) throws SQLException{
-		Connection connection = getConnection();
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
 		String sqlEnterpriseProperty;
 		switch(enterpriseProperty.toLowerCase()){
 		case "id":
@@ -180,14 +172,14 @@ public class EnterpriseResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
 	public Response putAddEnterprise(String body, @PathParam("ID") int ID) throws SQLException{
-		Connection connection = getConnection();
-		PreparedStatement statement = connection.prepareStatement("insert into EnterpriseMaster (EnterpriseID,EnterpriseName) values (?,?)");
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		PreparedStatement statement = connection.prepareStatement("insert into EnterpriseMaster (EnterpriseID, EnterpriseName) values (?, ?)");
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from EnterpriseMaster where EnterpriseID=?");
 		idCheck.setInt(1, ID);
 		ResultSet results = idCheck.executeQuery();
 		results.next();
 		if(results.getInt(1)==1){
-			return postEditEnterprise(body,ID);
+			return postEditEnterprise(body, ID);
 		}
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		statement.setInt(1, ID);
@@ -199,7 +191,7 @@ public class EnterpriseResource {
 		}
 		statement.executeUpdate();
 		JSONObject json = new JSONObject()
-				.put("sucess","added enterprise successfuly")
+				.put("sucess", "added enterprise successfuly")
 				.put("ID", ID)
 				.put("URI", "/enterprise/"+ID);
 		return Response.created(URI.create("/enterprise/"+ID)).entity(json.toString()).build();
@@ -208,8 +200,8 @@ public class EnterpriseResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response putAddEnterpriseNoID(String body) throws SQLException{
-		Connection connection = getConnection();
-		PreparedStatement statement = connection.prepareStatement("insert into EnterpriseMaster (EnterpriseName) values (?)",Statement.RETURN_GENERATED_KEYS);
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		PreparedStatement statement = connection.prepareStatement("insert into EnterpriseMaster (EnterpriseName) values (?)", Statement.RETURN_GENERATED_KEYS);
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		try{
 			String name = jsonObject.getString("Name");
@@ -222,7 +214,7 @@ public class EnterpriseResource {
 		keys.next();
 		int ID = keys.getInt(1);
 		JSONObject json = new JSONObject()
-				.put("sucess","added enterprise successfuly")
+				.put("sucess", "added enterprise successfuly")
 				.put("ID", ID)
 				.put("URI", "/enterprise/"+ID);
 		return Response.created(URI.create("/enterprise/"+ID)).entity(json.toString()).build();
@@ -232,7 +224,7 @@ public class EnterpriseResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
 	public Response postEditEnterprise(String body, @PathParam("ID") int ID) throws SQLException {
-		Connection connection = getConnection();
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from EnterpriseMaster where EnterpriseID=?");
 		idCheck.setInt(1, ID);
 		ResultSet results = idCheck.executeQuery();
@@ -259,7 +251,7 @@ public class EnterpriseResource {
 			}
 		}
 		JSONObject json = new JSONObject()
-				.put("sucess","updated enterprise successfuly")
+				.put("sucess", "updated enterprise successfuly")
 				.put("ID", ID)
 				.put("URI", "/enterprise/"+ID);
 		return Response.ok().entity(json.toString()).build();
@@ -268,7 +260,7 @@ public class EnterpriseResource {
 	@DELETE
 	@Path("{ID}")
 	public Response deleteEnterprise(@PathParam("ID") int ID) throws SQLException{
-		Connection connection = getConnection();
+		Connection connection = ConnectionFactory.getConnection(DB_PW);
 		PreparedStatement statement = connection.prepareStatement("delete from EnterpriseMaster where EnterpriseID=?");
 		statement.setInt(1, ID);
 		statement.executeUpdate();
