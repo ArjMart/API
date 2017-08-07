@@ -9,7 +9,7 @@ public interface ItemDAO {
 	
 	public List<Item> searchItems(int limit, String escapedQuery) throws DatabaseException;
 	
-	public void updateItem(int sku, Item item) throws DatabaseException;
+	public void updateItem(int SKU, Item item) throws DatabaseException;
 	
 	public void addItem(Item item) throws DatabaseException;
 	

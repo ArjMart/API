@@ -1,16 +1,34 @@
 package com.arjvik.arjmart.api;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class ConnectionFactory {
 	
-	private static final String DB_URL = "jdbc:mysql://db1.clwnpjvhytsb.us-west-2.rds.amazonaws.com:3306/arjmart",
-			DB_USER = "root";
+	private static String DB_URL, DB_USER, DB_PASSWORD;
 	
-	public static Connection getConnection(String databasePassword) throws SQLException{
-		Connection connection = DriverManager.getConnection(DB_URL, DB_USER, databasePassword);
+	public static Connection getConnection() throws SQLException{
+		if(DB_URL==null){
+			try {
+				Properties properties = new Properties();
+				InputStream in = ConnectionFactory.class.getClassLoader().getResourceAsStream("jdbc.properties");
+				if(in==null)
+					throw new RuntimeException("Could not read DB connection info, check if jdbc.properties exists in classpath");
+				properties.load(in);
+				DB_URL = properties.getProperty("dburl");
+				DB_USER = properties.getProperty("dbuser");
+				DB_PASSWORD = properties.getProperty("dbpassword");
+				if(DB_URL == null || DB_USER == null || DB_PASSWORD == null)
+					throw new RuntimeException("Could not read DB connection info, check format of jdbc.properties ");
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 		return connection;
 	}
 }

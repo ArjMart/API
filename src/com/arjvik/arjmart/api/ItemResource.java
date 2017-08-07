@@ -1,7 +1,5 @@
 package com.arjvik.arjmart.api;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,12 +8,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -26,7 +22,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -38,10 +33,7 @@ import org.json.JSONTokener;
 @Path("/item")
 @Produces(MediaType.APPLICATION_JSON)
 public class ItemResource {
-	private transient String DB_PW;
 	private static Logger logger;
-	@Context
-	ServletContext servletContext;
 	
 //	@Inject
 	ItemDAO itemDAO;
@@ -49,27 +41,12 @@ public class ItemResource {
 	@PostConstruct
 	public void init() {
 //		TODO Temporary, I hope hope hope
-		itemDAO = JDBCItemDAO.getInstance(servletContext);
+		itemDAO = JDBCItemDAO.getInstance();
 		logger = Logger.getLogger(this.getClass().getName());
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 		} catch (ClassNotFoundException e) {
 			logger.log(Level.SEVERE, "Error registering JDBC driver", e);
-		}
-		try{
-			if(System.getProperties().containsKey("com.arjvik.arjmart.api.DB_PW")){
-				DB_PW = System.getProperty("com.arjvik.arjmart.api.DB_PW");
-			}else{
-				String path = servletContext.getRealPath("/WEB-INF/passwords.txt");
-				File file = new File(path);
-				Scanner scanner = new Scanner(file);
-				DB_PW = scanner.nextLine();
-				scanner.close();
-				System.setProperty("com.arjvik.arjmart.api.DB_PW", DB_PW);
-			}
-		} catch(FileNotFoundException e){
-			DB_PW=null;
-			logger.log(Level.SEVERE, "Error reading DB Password", e);
 		}
 	}
 	
@@ -216,7 +193,7 @@ public class ItemResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}")
 	public Response putAddSKU(String body, @PathParam("SKU") int SKU) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into ItemMaster (SKU, ItemName, ItemDescription, ItemThumbnails) values (?, ?, ?, ?)");
 		PreparedStatement skuCheck = connection.prepareStatement("select count(*) from ItemMaster where SKU=?");
 		skuCheck.setInt(1, SKU);
@@ -257,7 +234,7 @@ public class ItemResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}")
 	public Response postEditItem(String body, @PathParam("SKU") int SKU) throws SQLException {
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement skuCheck = connection.prepareStatement("select count(*) from ItemMaster where SKU=?");
 		skuCheck.setInt(1, SKU);
 		ResultSet results = skuCheck.executeQuery();
@@ -321,7 +298,7 @@ public class ItemResource {
 	@DELETE
 	@Path("{SKU}")
 	public Response deleteItem(@PathParam("SKU") int SKU) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("delete from ItemMaster where SKU=?");
 		statement.setInt(1, SKU);
 		statement.executeUpdate();
@@ -334,7 +311,7 @@ public class ItemResource {
 	@GET
 	@Path("{SKU}/attribute")
 	public Response getAllAttribute(@PathParam("SKU") int SKU) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("select * from ItemAttributeMaster where SKU=?");
 		statement.setInt(1, SKU);
 		ResultSet resultSet = statement.executeQuery();
@@ -366,7 +343,7 @@ public class ItemResource {
 	@GET
 	@Path("{SKU}/attribute/{ID}")
 	public Response getAttribute(@PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("select * from ItemAttributeMaster where ItemAttributeID=?");
 		statement.setInt(1, ID);
 		ResultSet resultSet = statement.executeQuery();
@@ -395,7 +372,7 @@ public class ItemResource {
 	@GET
 	@Path("{SKU}/attribute/{ID}/{Property}")
 	public Response getAttributeProperty(@PathParam("SKU") int SKU, @PathParam("ID") int ID, @PathParam("Property") String property) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		String sqlItemProperty;
 		switch(property.toLowerCase()){
 		case "sku":
@@ -454,7 +431,7 @@ public class ItemResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attribute/{ID}")
 	public Response putAddAttribute(String body, @PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into ItemAttributeMaster (ItemAttributeID, SKU, Color, Size) values (?, ?, ?, ?)");
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from ItemAttributeMaster where ItemAttributeID=?");
 		idCheck.setInt(1, ID);
@@ -490,7 +467,7 @@ public class ItemResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attribute")
 	public Response putAddAttributeNoID(String body, @PathParam("SKU") int SKU) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into ItemAttributeMaster (SKU, Color, Size) values (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		statement.setInt(1, SKU);
@@ -521,7 +498,7 @@ public class ItemResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attribute/{ID}")
 	public Response postEditAttribute(String body, @PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from ItemAttributeMaster where ItemAttributeID=?");
 		idCheck.setInt(1, ID);
 		ResultSet results = idCheck.executeQuery();
@@ -581,7 +558,7 @@ public class ItemResource {
 	@DELETE
 	@Path("{SKU}/attribute/{ID}")
 	public Response deleteAttribute(@PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("delete from ItemAttributeMaster where ItemAttributeID=?");
 		statement.setInt(1, ID);
 		statement.executeUpdate();

@@ -1,21 +1,16 @@
 package com.arjvik.arjmart.api;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.net.URI;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -26,7 +21,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -39,12 +33,7 @@ import org.json.JSONTokener;
 @Produces(MediaType.APPLICATION_JSON)
 public class LocationResource {
 	private static final int MAX_RECORDS = 100;
-	private final String DB_URL = "jdbc:mysql://db1.clwnpjvhytsb.us-west-2.rds.amazonaws.com:3306/arjmart",
-			DB_USER = "root";
-	private transient String DB_PW;
 	private static Logger logger;
-	@Context
-	ServletContext servletContext;
 	
 	@PostConstruct
 	public void init() {
@@ -54,26 +43,11 @@ public class LocationResource {
 		} catch (ClassNotFoundException e) {
 			logger.log(Level.SEVERE, "Error registering JDBC driver", e);
 		}
-		try{
-			if(System.getProperties().containsKey("com.arjvik.arjmart.api.DB_PW")){
-				DB_PW = System.getProperty("com.arjvik.arjmart.api.DB_PW");
-			}else{
-				String path = servletContext.getRealPath("/WEB-INF/passwords.txt");
-				File file = new File(path);
-				Scanner scanner = new Scanner(file);
-				DB_PW = scanner.nextLine();
-				scanner.close();
-				System.setProperty("com.arjvik.arjmart.api.DB_PW", DB_PW);
-			}
-		} catch(FileNotFoundException e){
-			DB_PW=null;
-			logger.log(Level.SEVERE, "Error reading DB Password", e);
-		}
 	}
 	
 	@GET
 	public Response getAll(@DefaultValue("-1") @QueryParam("limit") int limit) throws SQLException {
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("select * from LocationMaster limit ?");
 		if(limit!=-1){
 			statement.setInt(1, Math.min(Math.max(limit, 0), MAX_RECORDS));
@@ -109,7 +83,7 @@ public class LocationResource {
 	@GET
 	@Path("{ID}")
 	public Response getLocation(@PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("select * from LocationMaster where LocationID=?");
 		statement.setInt(1, ID);
 		ResultSet resultSet = statement.executeQuery();
@@ -138,7 +112,7 @@ public class LocationResource {
 	@GET
 	@Path("{ID}/{Property}")
 	public Response getProperty(@PathParam("ID") int ID, @PathParam("Property") String locationProperty) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		String sqlEnterpriseProperty;
 		switch(locationProperty.toLowerCase()){
 		case "id":
@@ -188,7 +162,7 @@ public class LocationResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
 	public Response putAddLocation(String body, @PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (LocationID, EnterpriseID, Address) values (?, ?, ?)");
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from LocationMaster where LocationID=?");
 		idCheck.setInt(1, ID);
@@ -234,7 +208,7 @@ public class LocationResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response putAddLocationNoID(String body) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (EnterpriseID, Address) values (?, ?)", Statement.RETURN_GENERATED_KEYS);
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		try{
@@ -276,7 +250,7 @@ public class LocationResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
 	public Response postEditLocation(String body, @PathParam("ID") int ID) throws SQLException {
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from LocationMaster where LocationID=?");
 		idCheck.setInt(1, ID);
 		ResultSet results = idCheck.executeQuery();
@@ -329,7 +303,7 @@ public class LocationResource {
 	@DELETE
 	@Path("{ID}")
 	public Response deleteEnterprise(@PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection(DB_PW);
+		Connection connection = ConnectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("delete from LocationMaster where LocationID=?");
 		statement.setInt(1, ID);
 		statement.executeUpdate();
