@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -33,21 +34,17 @@ import org.json.JSONTokener;
 @Produces(MediaType.APPLICATION_JSON)
 public class EnterpriseResource {
 	private static final int MAX_RECORDS = 100;
-	private static Logger logger;
 	
-	@PostConstruct
-	public void init() {
-		logger = Logger.getLogger(this.getClass().getName());
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			logger.log(Level.SEVERE, "Error registering JDBC driver", e);
-		}
+	private ConnectionFactory connectionFactory;
+	
+	@Inject
+	public EnterpriseResource(ConnectionFactory connectionFactory){
+		this.connectionFactory = connectionFactory;
 	}
 	
 	@GET
 	public Response getAll(@DefaultValue("-1") @QueryParam("limit") int limit) throws SQLException {
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("select * from EnterpriseMaster limit ?");
 		if(limit!=-1){
 			statement.setInt(1, Math.min(Math.max(limit, 0), MAX_RECORDS));
@@ -77,7 +74,7 @@ public class EnterpriseResource {
 	@GET
 	@Path("{ID}")
 	public Response getEnterprise(@PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("select * from EnterpriseMaster where EnterpriseID=?");
 		statement.setInt(1, ID);
 		ResultSet resultSet = statement.executeQuery();
@@ -100,7 +97,7 @@ public class EnterpriseResource {
 	@GET
 	@Path("{ID}/{Property}")
 	public Response getProperty(@PathParam("ID") int ID, @PathParam("Property") String enterpriseProperty) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		String sqlEnterpriseProperty;
 		switch(enterpriseProperty.toLowerCase()){
 		case "id":
@@ -149,7 +146,7 @@ public class EnterpriseResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
 	public Response putAddEnterprise(String body, @PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into EnterpriseMaster (EnterpriseID, EnterpriseName) values (?, ?)");
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from EnterpriseMaster where EnterpriseID=?");
 		idCheck.setInt(1, ID);
@@ -177,7 +174,7 @@ public class EnterpriseResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response putAddEnterpriseNoID(String body) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into EnterpriseMaster (EnterpriseName) values (?)", Statement.RETURN_GENERATED_KEYS);
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		try{
@@ -201,7 +198,7 @@ public class EnterpriseResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
 	public Response postEditEnterprise(String body, @PathParam("ID") int ID) throws SQLException {
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from EnterpriseMaster where EnterpriseID=?");
 		idCheck.setInt(1, ID);
 		ResultSet results = idCheck.executeQuery();
@@ -237,7 +234,7 @@ public class EnterpriseResource {
 	@DELETE
 	@Path("{ID}")
 	public Response deleteEnterprise(@PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("delete from EnterpriseMaster where EnterpriseID=?");
 		statement.setInt(1, ID);
 		statement.executeUpdate();

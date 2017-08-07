@@ -6,35 +6,32 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import javax.inject.Inject;
 
 public class JDBCItemDAO implements ItemDAO {
 	
-	private static JDBCItemDAO instance;
-
+//	private static JDBCItemDAO instance;
+	
+	private ConnectionFactory connectionFactory;
+	
 	private static final int MAX_RECORDS = 100;
-	private Logger logger;
 	
-	private JDBCItemDAO() {
-		logger = Logger.getLogger(this.getClass().getName());
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			logger.log(Level.SEVERE, "Error registering JDBC driver", e);
-		}
+	@Inject
+	public JDBCItemDAO(ConnectionFactory connectionFactory) {
+		this.connectionFactory = connectionFactory;
 	}
 	
-	public static synchronized JDBCItemDAO getInstance(){
-		if(instance == null)
-			instance = new JDBCItemDAO();
-		return instance;
-	}
+//	public static synchronized JDBCItemDAO getInstance(){
+//		if(instance == null)
+//			instance = new JDBCItemDAO(new ConnectionFactory());
+//		return instance;
+//	}
 
 	@Override
 	public Item getItem(int SKU) throws DatabaseException{
 		try{
-			Connection connection = ConnectionFactory.getConnection();
+			Connection connection = connectionFactory.getConnection();
 			PreparedStatement statement = connection.prepareStatement("select * from ItemMaster where SKU=?");
 			statement.setInt(1, SKU);
 			ResultSet resultSet = statement.executeQuery();
@@ -51,7 +48,7 @@ public class JDBCItemDAO implements ItemDAO {
 	public List<Item> getAllItems(int limit) throws DatabaseException {
 		try{
 			List<Item> items = new ArrayList<>();
-			Connection connection = ConnectionFactory.getConnection();
+			Connection connection = connectionFactory.getConnection();
 			PreparedStatement statement = connection.prepareStatement("select * from ItemMaster limit ?");
 			if(limit!=-1){
 				statement.setInt(1, Math.min(Math.max(limit, 0), MAX_RECORDS));
@@ -71,7 +68,7 @@ public class JDBCItemDAO implements ItemDAO {
 	@Override
 	public List<Item> searchItems(int limit, String query) throws DatabaseException {
 		try{
-			Connection connection = ConnectionFactory.getConnection();
+			Connection connection = connectionFactory.getConnection();
 			PreparedStatement statement = connection.prepareStatement("select * from ItemMaster where ItemName like ? escape '|' limit ?");
 			List<Item> items = new ArrayList<>();
 			//String escapedQuery="%"+query.replace("%", "|%").replace("_", "|_").replace(' ', '%')+"%";

@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -33,21 +34,17 @@ import org.json.JSONTokener;
 @Produces(MediaType.APPLICATION_JSON)
 public class LocationResource {
 	private static final int MAX_RECORDS = 100;
-	private static Logger logger;
 	
-	@PostConstruct
-	public void init() {
-		logger = Logger.getLogger(this.getClass().getName());
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			logger.log(Level.SEVERE, "Error registering JDBC driver", e);
-		}
+	private ConnectionFactory connectionFactory;
+	
+	@Inject
+	public LocationResource(ConnectionFactory connectionFactory){
+		this.connectionFactory = connectionFactory;
 	}
 	
 	@GET
 	public Response getAll(@DefaultValue("-1") @QueryParam("limit") int limit) throws SQLException {
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("select * from LocationMaster limit ?");
 		if(limit!=-1){
 			statement.setInt(1, Math.min(Math.max(limit, 0), MAX_RECORDS));
@@ -83,7 +80,7 @@ public class LocationResource {
 	@GET
 	@Path("{ID}")
 	public Response getLocation(@PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("select * from LocationMaster where LocationID=?");
 		statement.setInt(1, ID);
 		ResultSet resultSet = statement.executeQuery();
@@ -112,7 +109,7 @@ public class LocationResource {
 	@GET
 	@Path("{ID}/{Property}")
 	public Response getProperty(@PathParam("ID") int ID, @PathParam("Property") String locationProperty) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		String sqlEnterpriseProperty;
 		switch(locationProperty.toLowerCase()){
 		case "id":
@@ -162,7 +159,7 @@ public class LocationResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
 	public Response putAddLocation(String body, @PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (LocationID, EnterpriseID, Address) values (?, ?, ?)");
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from LocationMaster where LocationID=?");
 		idCheck.setInt(1, ID);
@@ -208,7 +205,7 @@ public class LocationResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response putAddLocationNoID(String body) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (EnterpriseID, Address) values (?, ?)", Statement.RETURN_GENERATED_KEYS);
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		try{
@@ -250,7 +247,7 @@ public class LocationResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
 	public Response postEditLocation(String body, @PathParam("ID") int ID) throws SQLException {
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from LocationMaster where LocationID=?");
 		idCheck.setInt(1, ID);
 		ResultSet results = idCheck.executeQuery();
@@ -303,7 +300,7 @@ public class LocationResource {
 	@DELETE
 	@Path("{ID}")
 	public Response deleteEnterprise(@PathParam("ID") int ID) throws SQLException{
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("delete from LocationMaster where LocationID=?");
 		statement.setInt(1, ID);
 		statement.executeUpdate();
