@@ -11,8 +11,6 @@ import javax.inject.Inject;
 
 public class JDBCItemDAO implements ItemDAO {
 	
-//	private static JDBCItemDAO instance;
-	
 	private ConnectionFactory connectionFactory;
 	
 	private static final int MAX_RECORDS = 100;
@@ -21,12 +19,6 @@ public class JDBCItemDAO implements ItemDAO {
 	public JDBCItemDAO(ConnectionFactory connectionFactory) {
 		this.connectionFactory = connectionFactory;
 	}
-	
-//	public static synchronized JDBCItemDAO getInstance(){
-//		if(instance == null)
-//			instance = new JDBCItemDAO(new ConnectionFactory());
-//		return instance;
-//	}
 
 	@Override
 	public Item getItem(int SKU) throws DatabaseException{
@@ -71,8 +63,8 @@ public class JDBCItemDAO implements ItemDAO {
 			Connection connection = connectionFactory.getConnection();
 			PreparedStatement statement = connection.prepareStatement("select * from ItemMaster where ItemName like ? escape '|' limit ?");
 			List<Item> items = new ArrayList<>();
-			//String escapedQuery="%"+query.replace("%", "|%").replace("_", "|_").replace(' ', '%')+"%";
-			statement.setString(1, query);
+			String escapedQuery="%"+query.replace("%", "|%").replace("_", "|_").replace(' ', '%')+"%";
+			statement.setString(1, escapedQuery);
 			if(limit!=-1){
 				statement.setInt(2, Math.min(Math.max(limit, 0), MAX_RECORDS));
 			}else{

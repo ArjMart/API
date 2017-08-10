@@ -71,8 +71,7 @@ public class ItemResource {
 	}
 	
 	public Response getSearch(int limit, String query) throws DatabaseException {
-		String escapedQuery="%"+query.replace("%", "|%").replace("_", "|_").replace(' ', '%')+"%";
-		List<Item> items = itemDAO.searchItems(limit, escapedQuery);
+		List<Item> items = itemDAO.searchItems(limit, query);
 		JSONArray jsonItems = new JSONArray();
 		for(Item item : items) {
 			JSONObject jsonItem= new JSONObject()
@@ -94,8 +93,7 @@ public class ItemResource {
 		}
 		JSONObject json = new JSONObject()
 				.put("items", jsonItems)
-				.put("count", items.size())
-				.put("query", escapedQuery);
+				.put("count", items.size());
 		return Response.ok(json.toString()).build();
 	}
 	
