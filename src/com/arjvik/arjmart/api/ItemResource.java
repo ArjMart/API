@@ -120,65 +120,6 @@ public class ItemResource {
 		return Response.ok().entity(json.toString()).build();
 	}
 	
-	/* Depricated
-	@GET
-	
-	@Path("{SKU}/ {Property}")
-	public Response getProperty(@PathParam("SKU") int SKU, @PathParam("Property") String itemProperty) throws SQLException {
-		Connection connection = getConnection();
-		String sqlItemProperty;
-		switch(itemProperty.toLowerCase()) {
-		case "sku":
-			sqlItemProperty = "SKU";
-			break;
-		case "name":
-			sqlItemProperty = "ItemName";
-			break;
-		case "description":
-			sqlItemProperty = "ItemDescription";
-			break;
-		case "thumbnail":
-			sqlItemProperty = "ItemThumbnails";
-			break;
-		default:
-			JSONObject json = new JSONObject()
-					.put("error", "invalid property")
-					.put("token", itemProperty)
-					.put("expected", 
-							new JSONArray()
-								.put("SKU")
-								.put("Name")
-								.put("Description")
-								.put("Thumbnail"));
-			return Response.status(Status.BAD_REQUEST).entity(json.toString()).build();
-		}
-		PreparedStatement statement = connection.prepareStatement("select * from ItemMaster where SKU=?");
-		statement.setInt(1, SKU);
-		ResultSet resultSet = statement.executeQuery();
-		if(!resultSet.next()) {
-			JSONObject json = new JSONObject()
-					.put("error", "SKU not found")
-					.put("token", SKU);
-			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
-		}
-		JSONObject json = new JSONObject();
-		if(itemProperty.equalsIgnoreCase("SKU")) {
-			int value = resultSet.getInt(sqlItemProperty);
-			if(value!=0)
-				json.put(itemProperty, value);
-			else
-				json.put(itemProperty, JSONObject.NULL);
-		}else {
-			String value = resultSet.getString(sqlItemProperty);
-			if(value!=null)
-				json.put(itemProperty, value);
-			else
-				json.put(itemProperty, JSONObject.NULL);
-		}
-		return Response.ok().entity(json.toString()).build();
-	}
-	*/
-	
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}")
@@ -358,66 +299,6 @@ public class ItemResource {
 	public Response getAttribute0(@PathParam("ID") int ID) throws SQLException {
 		return getAttribute(-1, ID);
 	}
-	
-	/* Depricated
-	@GET
-	@Path("{SKU}/attribute/{ID}/{Property}")
-	public Response getAttributeProperty(@PathParam("SKU") int SKU, @PathParam("ID") int ID, @PathParam("Property") String property) throws SQLException {
-		Connection connection = connectionFactory.getConnection();
-		String sqlItemProperty;
-		switch(property.toLowerCase()) {
-		case "sku":
-			sqlItemProperty = "SKU";
-			break;
-		case "color":
-			sqlItemProperty = "Color";
-			break;
-		case "size":
-			sqlItemProperty = "Size";
-			break;
-		default:
-			JSONObject json = new JSONObject()
-					.put("error", "invalid property")
-					.put("token", property)
-					.put("expected", 
-							new JSONArray()
-								.put("SKU")
-								.put("Color")
-								.put("Size"));
-			return Response.status(Status.BAD_REQUEST).entity(json.toString()).build();
-		}
-		PreparedStatement statement = connection.prepareStatement("select * from ItemAttributeMaster where ItemAttributeID=?");
-		statement.setInt(1, ID);
-		ResultSet resultSet = statement.executeQuery();
-		if(!resultSet.next()) {
-			JSONObject json = new JSONObject()
-					.put("error", "ID not found")
-					.put("token", ID);
-			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
-		}
-		JSONObject json = new JSONObject();
-		if(property.equalsIgnoreCase("SKU")) {
-			int value = resultSet.getInt(sqlItemProperty);
-			if(value!=0)
-				json.put(property, value);
-			else
-				json.put(property, JSONObject.NULL);
-		}else {
-			String value = resultSet.getString(sqlItemProperty);
-			if(value!=null)
-				json.put(property, value);
-			else
-				json.put(property, JSONObject.NULL);
-		}
-		return Response.ok().entity(json.toString()).build();
-	}
-	
-	@GET
-	@Path("attribute/{ID}/{Property}")
-	public Response getAttributeProperty0(@PathParam("ID") int ID, @PathParam("Property") String property) throws SQLException {
-		return getAttributeProperty(-1, ID, property);
-	}
-	*/
 	
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
