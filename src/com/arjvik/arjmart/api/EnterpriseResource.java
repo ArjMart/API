@@ -68,7 +68,7 @@ public class EnterpriseResource {
 		}
 		json.put("enterprises", enterprises)
 			.put("count", rowCount);
-		return Response.ok(json.toString()).build();
+		return Response.ok(json).build();
 	}
 	
 	@GET
@@ -82,7 +82,7 @@ public class EnterpriseResource {
 			JSONObject json = new JSONObject()
 					.put("error", "Enterprise ID not found")
 					.put("token", ID);
-			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+			return Response.status(Status.NOT_FOUND).entity(json).build();
 		}
 		JSONObject json = new JSONObject()
 				.put("ID", ID);
@@ -91,7 +91,7 @@ public class EnterpriseResource {
 			json.put("Name", name);
 		else
 			json.put("Name", JSONObject.NULL);
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 	
 	@GET
@@ -114,7 +114,7 @@ public class EnterpriseResource {
 							new JSONArray()
 								.put("ID")
 								.put("Name"));
-			return Response.status(Status.BAD_REQUEST).entity(json.toString()).build();
+			return Response.status(Status.BAD_REQUEST).entity(json).build();
 		}
 		PreparedStatement statement = connection.prepareStatement("select * from EnterpriseMaster where EnterpriseID=?");
 		statement.setInt(1, ID);
@@ -123,7 +123,7 @@ public class EnterpriseResource {
 			JSONObject json = new JSONObject()
 					.put("error", "Enterprise ID not found")
 					.put("token", ID);
-			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+			return Response.status(Status.NOT_FOUND).entity(json).build();
 		}
 		JSONObject json = new JSONObject();
 		if(enterpriseProperty.equalsIgnoreCase("ID")){
@@ -139,7 +139,7 @@ public class EnterpriseResource {
 			else
 				json.put(enterpriseProperty, JSONObject.NULL);
 		}
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 	
 	@PUT
@@ -168,7 +168,7 @@ public class EnterpriseResource {
 				.put("sucess", "added enterprise successfuly")
 				.put("ID", ID)
 				.put("URI", "/enterprise/"+ID);
-		return Response.created(URI.create("/enterprise/"+ID)).entity(json.toString()).build();
+		return Response.created(URI.create("/enterprise/"+ID)).entity(json).build();
 	}
 	
 	@PUT
@@ -191,7 +191,7 @@ public class EnterpriseResource {
 				.put("sucess", "added enterprise successfuly")
 				.put("ID", ID)
 				.put("URI", "/enterprise/"+ID);
-		return Response.created(URI.create("/enterprise/"+ID)).entity(json.toString()).build();
+		return Response.created(URI.create("/enterprise/"+ID)).entity(json).build();
 	}
 
 	@POST
@@ -207,7 +207,7 @@ public class EnterpriseResource {
 			JSONObject json = new JSONObject()
 					.put("error", "Enterprise ID not found")
 					.put("token", ID);
-			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+			return Response.status(Status.NOT_FOUND).entity(json).build();
 		}
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		try{
@@ -228,7 +228,7 @@ public class EnterpriseResource {
 				.put("sucess", "updated enterprise successfuly")
 				.put("ID", ID)
 				.put("URI", "/enterprise/"+ID);
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 	
 	@DELETE
@@ -241,6 +241,6 @@ public class EnterpriseResource {
 		JSONObject json = new JSONObject()
 				.put("sucess", "enterprise deleted successfuly")
 				.put("ID", ID);
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 }

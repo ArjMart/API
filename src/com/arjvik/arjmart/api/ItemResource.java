@@ -67,7 +67,7 @@ public class ItemResource {
 		JSONObject json = new JSONObject()
 				.put("items", jsonItems)
 				.put("count", items.size());
-		return Response.ok(json.toString()).build();
+		return Response.ok(json).build();
 	}
 	
 	public Response getSearch(int limit, String query) throws DatabaseException {
@@ -94,7 +94,7 @@ public class ItemResource {
 		JSONObject json = new JSONObject()
 				.put("items", jsonItems)
 				.put("count", items.size());
-		return Response.ok(json.toString()).build();
+		return Response.ok(json).build();
 	}
 	
 	@GET
@@ -115,7 +115,7 @@ public class ItemResource {
 			json.put("Thumbnail", item.getThumbnail());
 		else
 			json.put("Thumbnail", JSONObject.NULL);
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 	
 	@PUT
@@ -156,7 +156,7 @@ public class ItemResource {
 				.put("sucess", "added item successfuly")
 				.put("SKU", SKU)
 				.put("URI", "/item/"+SKU);
-		return Response.created(URI.create("/item/"+SKU)).entity(json.toString()).build();
+		return Response.created(URI.create("/item/"+SKU)).entity(json).build();
 	}
 
 	@POST
@@ -172,7 +172,7 @@ public class ItemResource {
 			JSONObject json = new JSONObject()
 					.put("error", "SKU not found")
 					.put("token", SKU);
-			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+			return Response.status(Status.NOT_FOUND).entity(json).build();
 		}
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		try {
@@ -221,7 +221,7 @@ public class ItemResource {
 				.put("sucess", "updated item successfuly")
 				.put("SKU", SKU)
 				.put("URI", "/item/"+SKU);
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 	
 	@DELETE
@@ -234,7 +234,7 @@ public class ItemResource {
 		JSONObject json = new JSONObject()
 				.put("sucess", "item deleted successfuly")
 				.put("SKU", SKU);
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 	
 	@GET
@@ -266,7 +266,7 @@ public class ItemResource {
 		}
 		json.put("attributes", attributes)
 			.put("count", rowCount);
-		return Response.ok(json.toString()).build();
+		return Response.ok(json).build();
 	}
 	
 	@GET
@@ -289,7 +289,7 @@ public class ItemResource {
 			json.put("Size", size);
 		else
 			json.put("size", JSONObject.NULL);
-		return Response.ok(json.toString()).build();
+		return Response.ok(json).build();
 	}
 	
 	@GET
@@ -331,7 +331,7 @@ public class ItemResource {
 				.put("sucess", "added attribute successfuly")
 				.put("ID", ID)
 				.put("URI", "/item/"+SKU+"/attribute/"+ID);
-		return Response.created(URI.create("/item/"+SKU+"/attribute/"+ID)).entity(json.toString()).build();
+		return Response.created(URI.create("/item/"+SKU+"/attribute/"+ID)).entity(json).build();
 	}
 
 	@PUT
@@ -362,7 +362,7 @@ public class ItemResource {
 				.put("sucess", "added attribute successfuly")
 				.put("ID", ID)
 				.put("URI", "/item/"+SKU+"/attribute/"+ID);
-		return Response.created(URI.create("/item/"+SKU+"/attribute/"+ID)).entity(json.toString()).build();
+		return Response.created(URI.create("/item/"+SKU+"/attribute/"+ID)).entity(json).build();
 	}
 	
 	@POST
@@ -378,7 +378,7 @@ public class ItemResource {
 			JSONObject json = new JSONObject()
 					.put("error", "ID not found")
 					.put("token", ID);
-			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+			return Response.status(Status.NOT_FOUND).entity(json).build();
 		}
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		try {
@@ -416,7 +416,7 @@ public class ItemResource {
 			json.put("URI", "/item/"+SKU+"/attribute/"+ID);
 		else
 			json.put("URI", "/item/attribute/"+ID);
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 	
 	@POST
@@ -436,7 +436,7 @@ public class ItemResource {
 		JSONObject json = new JSONObject()
 				.put("sucess", "attribute deleted successfuly")
 				.put("ID", ID);
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 	
 	@DELETE

@@ -74,7 +74,7 @@ public class LocationResource {
 		}
 		json.put("locations", locations)
 			.put("count", rowCount);
-		return Response.ok(json.toString()).build();
+		return Response.ok(json).build();
 	}
 	
 	@GET
@@ -88,7 +88,7 @@ public class LocationResource {
 			JSONObject json = new JSONObject()
 					.put("error", "Location ID not found")
 					.put("token", ID);
-			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+			return Response.status(Status.NOT_FOUND).entity(json).build();
 		}
 		JSONObject json = new JSONObject()
 				.put("ID", ID);
@@ -103,7 +103,7 @@ public class LocationResource {
 			json.put("Address", address);
 		else
 			json.put("Address", JSONObject.NULL);
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 	
 	@GET
@@ -127,7 +127,7 @@ public class LocationResource {
 								.put("ID")
 								.put("Enterprise-ID")
 								.put("Address"));
-			return Response.status(Status.BAD_REQUEST).entity(json.toString()).build();
+			return Response.status(Status.BAD_REQUEST).entity(json).build();
 		}
 		PreparedStatement statement = connection.prepareStatement("select * from LocationMaster where LocationID=?");
 		statement.setInt(1, ID);
@@ -136,7 +136,7 @@ public class LocationResource {
 			JSONObject json = new JSONObject()
 					.put("error", "Location ID not found")
 					.put("token", ID);
-			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+			return Response.status(Status.NOT_FOUND).entity(json).build();
 		}
 		JSONObject json = new JSONObject();
 		if(locationProperty.equalsIgnoreCase("ID")||locationProperty.equalsIgnoreCase("Enterprise-ID")){
@@ -152,7 +152,7 @@ public class LocationResource {
 			else
 				json.put(locationProperty, JSONObject.NULL);
 		}
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 	
 	@PUT
@@ -180,13 +180,13 @@ public class LocationResource {
 				JSONObject json = new JSONObject()
 						.put("error", "Enterprise ID not found")
 						.put("token", eid);
-				return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+				return Response.status(Status.NOT_FOUND).entity(json).build();
 			}
 			statement.setInt(2, eid);
 		}catch(JSONException e){
 			JSONObject json = new JSONObject()
 					.put("error", "Enterprise ID not provided");
-			return Response.status(Status.BAD_REQUEST).entity(json.toString()).build();
+			return Response.status(Status.BAD_REQUEST).entity(json).build();
 		}
 		try{
 			String address = jsonObject.getString("Address");
@@ -199,7 +199,7 @@ public class LocationResource {
 				.put("sucess", "added location successfuly")
 				.put("ID", ID)
 				.put("URI", "/location/"+ID);
-		return Response.created(URI.create("/location/"+ID)).entity(json.toString()).build();
+		return Response.created(URI.create("/location/"+ID)).entity(json).build();
 	}
 	
 	@PUT
@@ -218,13 +218,13 @@ public class LocationResource {
 				JSONObject json = new JSONObject()
 						.put("error", "Enterprise ID not found")
 						.put("token", eid);
-				return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+				return Response.status(Status.NOT_FOUND).entity(json).build();
 			}
 			statement.setInt(1, eid);
 		}catch(JSONException e){
 			JSONObject json = new JSONObject()
 					.put("error", "Enterprise ID not provided");
-			return Response.status(Status.BAD_REQUEST).entity(json.toString()).build();
+			return Response.status(Status.BAD_REQUEST).entity(json).build();
 		}
 		try{
 			String address = jsonObject.getString("Address");
@@ -240,7 +240,7 @@ public class LocationResource {
 				.put("sucess", "added location successfuly")
 				.put("ID", ID)
 				.put("URI", "/location/"+ID);
-		return Response.created(URI.create("/location/"+ID)).entity(json.toString()).build();
+		return Response.created(URI.create("/location/"+ID)).entity(json).build();
 	}
 	
 	@POST
@@ -256,7 +256,7 @@ public class LocationResource {
 			JSONObject json = new JSONObject()
 					.put("error", "Location ID not found")
 					.put("token", ID);
-			return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+			return Response.status(Status.NOT_FOUND).entity(json).build();
 		}
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		try{
@@ -269,7 +269,7 @@ public class LocationResource {
 				JSONObject json = new JSONObject()
 						.put("error", "Enterprise ID not found")
 						.put("token", eid);
-				return Response.status(Status.NOT_FOUND).entity(json.toString()).build();
+				return Response.status(Status.NOT_FOUND).entity(json).build();
 			}
 			PreparedStatement statement = connection.prepareStatement("update LocationMaster set EnterpriseID=? where LocationID=?");
 			statement.setInt(1, eid);
@@ -294,7 +294,7 @@ public class LocationResource {
 				.put("sucess", "updated location successfuly")
 				.put("ID", ID)
 				.put("URI", "/location/"+ID);
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 	
 	@DELETE
@@ -307,6 +307,6 @@ public class LocationResource {
 		JSONObject json = new JSONObject()
 				.put("sucess", "location deleted successfuly")
 				.put("ID", ID);
-		return Response.ok().entity(json.toString()).build();
+		return Response.ok().entity(json).build();
 	}
 }
