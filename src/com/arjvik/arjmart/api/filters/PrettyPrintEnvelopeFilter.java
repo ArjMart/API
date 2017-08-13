@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.filters;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,6 +15,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
 import org.json.JSONArray;
+
+import com.arjvik.arjmart.api.JSONObject;
 
 @Provider
 @Priority(Priorities.ENTITY_CODER+1)

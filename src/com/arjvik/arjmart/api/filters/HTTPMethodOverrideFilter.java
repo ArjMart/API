@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.filters;
 
 import java.io.IOException;
 
@@ -8,7 +8,9 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
+import javax.ws.rs.ext.Provider;
 
+@Provider
 @PreMatching
 @Priority(Priorities.HEADER_DECORATOR)
 public class HTTPMethodOverrideFilter implements ContainerResponseFilter {

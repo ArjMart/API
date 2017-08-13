@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.filters;
 
 import java.io.IOException;
 
@@ -9,6 +9,8 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
+
+import com.arjvik.arjmart.api.JSONObject;
 
 @Provider
 @Priority(Priorities.AUTHENTICATION)

@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.filters;
 
 import java.io.IOException;
 import java.security.MessageDigest;
