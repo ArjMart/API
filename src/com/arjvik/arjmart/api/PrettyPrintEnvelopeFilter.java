@@ -10,13 +10,14 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
 import org.json.JSONArray;
 
 @Provider
-@Priority(Priorities.ENTITY_CODER)
+@Priority(Priorities.ENTITY_CODER+1)
 public class PrettyPrintEnvelopeFilter implements ContainerResponseFilter {
 
 	private static final int NUM_SPACES_TO_INDENT = 2;
@@ -26,12 +27,15 @@ public class PrettyPrintEnvelopeFilter implements ContainerResponseFilter {
 	
 	@Override
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-		JSONObject json = (JSONObject) responseContext.getEntity();
+		Object obj = responseContext.getEntity();
+		if(!(obj instanceof JSONObject))
+			return;
+		JSONObject json = (JSONObject) obj;
 		MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
 		if(queryParams.containsKey("callback")||queryParams.containsKey("envelope")){
 			JSONObject envelope = new JSONObject();
 			int status = responseContext.getStatus();
-			responseContext.setStatus(200);
+			responseContext.setStatusInfo(Status.OK);
 			envelope.put("status", status);
 			MultivaluedMap<String, String> headers = responseContext.getStringHeaders();
 			JSONObject jsonHeaders = new JSONObject();
