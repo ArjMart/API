@@ -16,7 +16,7 @@ import javax.ws.rs.ext.Provider;
 public class HTTPMethodOverrideFilter implements ContainerResponseFilter {
 	@Override
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-		if(requestContext.getMethod()!="POST")
+		if(!requestContext.getMethod().equals("POST"))
 			return;
 		String method = requestContext.getHeaderString("X-Http-Method-Override");
 		if(method!=null){

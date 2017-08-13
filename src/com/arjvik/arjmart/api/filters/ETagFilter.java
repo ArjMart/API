@@ -33,7 +33,10 @@ public class ETagFilter implements ContainerRequestFilter, ContainerResponseFilt
 			if(requestContext.getMethod()!="GET")
 				return;
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			byte[] etagBytes = md.digest(((String) responseContext.getEntity()).getBytes());
+			String entity = ((String) responseContext.getEntity());
+			if(entity==null)
+				return;
+			byte[] etagBytes = md.digest(entity.getBytes());
 			String ETag = toHexString(etagBytes);
 			if(requestContext.getPropertyNames().contains("If-None-Match")){
 				if(requestContext.getProperty("If-None-Match").equals(ETag)){
