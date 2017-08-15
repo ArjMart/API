@@ -1,8 +1,10 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.hk2;
 
 import javax.inject.Singleton;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+
+import com.arjvik.arjmart.api.ConnectionFactory;
 
 public class ConnectionFactoryBinder extends AbstractBinder {
 	@Override

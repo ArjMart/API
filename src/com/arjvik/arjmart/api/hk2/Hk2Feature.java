@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.hk2;
 
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
