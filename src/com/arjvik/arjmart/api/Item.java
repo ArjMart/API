@@ -19,8 +19,8 @@ public class Item {
 	public int getSKU() {
 		return SKU;
 	}
-	public void setSKU(int iD) {
-		SKU = iD;
+	public void setSKU(int SKU) {
+		this.SKU = SKU;
 	}
 	public String getName() {
 		return name;

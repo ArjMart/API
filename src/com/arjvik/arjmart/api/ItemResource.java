@@ -19,17 +19,24 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONTokener;
 
+import de.jupf.staticlog.Log;
+
 @Path("/item")
 @Produces(MediaType.APPLICATION_JSON)
 public class ItemResource {
+	
+	private static final int MAX_RECORDS = 100;
 	
 	private ItemDAO itemDAO;
 	private ConnectionFactory connectionFactory;
@@ -41,10 +48,15 @@ public class ItemResource {
 	}
 	
 	@GET
-	public Response getAll(@DefaultValue("-1") @QueryParam("limit") int limit, @QueryParam("query") String query) throws DatabaseException {
+	public Response getAll(@DefaultValue("0") @QueryParam("start") int start, @DefaultValue("-1") @QueryParam("limit") int limit, @QueryParam("query") String query) throws DatabaseException {
 		if(query!=null)
-			return getSearch(limit, query);
-		List<Item> items = itemDAO.getAllItems(limit);
+			return getSearch(start, limit, query);
+		if(limit!=-1){
+			limit = Math.min(Math.max(limit, 0), MAX_RECORDS);
+		}else{
+			limit = MAX_RECORDS;
+		}
+		List<Item> items = itemDAO.getAllItems(start,limit);
 		JSONArray jsonItems = new JSONArray();
 		for(Item item : items) {
 			JSONObject jsonItem= new JSONObject()
@@ -67,18 +79,31 @@ public class ItemResource {
 		JSONObject json = new JSONObject()
 				.put("items", jsonItems)
 				.put("count", items.size());
-		return Response.ok(json).build();
+		ResponseBuilder response = Response.ok(json);
+		if(start>0){
+			int newStart = Math.max(0, start-limit);
+			Link previous = Link.fromResource(ItemResource.class).param("start", Integer.toString(newStart)).param("limit", Integer.toString(limit)).build();
+			response.links(previous);
+		}if(items.size()<limit){
+			Link next = Link.fromResource(ItemResource.class).param("start", Integer.toString(start+limit)).param("limit", Integer.toString(limit)).build();
+			response.links(next);
+		}
+		return response.build();
 	}
 	
-	public Response getSearch(int limit, String query) throws DatabaseException {
-		List<Item> items = itemDAO.searchItems(limit, query);
+	public Response getSearch(int start, int limit, String query) throws DatabaseException {
+		if(limit!=-1){
+			limit = Math.min(Math.max(limit, 0), MAX_RECORDS);
+		}else{
+			limit = MAX_RECORDS;
+		}
+		List<Item> items = itemDAO.searchItems(start, limit, query);
 		JSONArray jsonItems = new JSONArray();
 		for(Item item : items) {
 			JSONObject jsonItem= new JSONObject()
 					.put("SKU", item.getSKU());
-			String name = item.getName();
-			if(name!=null)
-				jsonItem.put("Name", name);
+			if(item.getName()!=null)
+				jsonItem.put("Name", item.getName());
 			else
 				jsonItem.put("Name", JSONObject.NULL);
 			if(item.getDescription()!=null)
@@ -94,7 +119,15 @@ public class ItemResource {
 		JSONObject json = new JSONObject()
 				.put("items", jsonItems)
 				.put("count", items.size());
-		return Response.ok(json).build();
+		ResponseBuilder response = Response.ok(json);
+		if(start>0){
+			Link previous = Link.fromUriBuilder(UriBuilder.fromResource(ItemResource.class).queryParam("start", Math.max(0, start-limit)).queryParam("limit", limit).queryParam("query", query)).rel("previous").build();
+			response.links(previous);
+		}if(items.size()<limit){
+			Link next = Link.fromUriBuilder(UriBuilder.fromResource(ItemResource.class).queryParam("start", start+limit).queryParam("limit", limit).queryParam("query", query)).rel("next").build();
+			response.links(next);
+		}
+		return response.build();
 	}
 	
 	@GET
@@ -118,123 +151,123 @@ public class ItemResource {
 		return Response.ok().entity(json).build();
 	}
 	
-	@PUT
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("{SKU}")
-	public Response putAddSKU(String body, @PathParam("SKU") int SKU) throws SQLException {
-		Connection connection = connectionFactory.getConnection();
-		PreparedStatement statement = connection.prepareStatement("insert into ItemMaster (SKU, ItemName, ItemDescription, ItemThumbnails) values (?, ?, ?, ?)");
-		PreparedStatement skuCheck = connection.prepareStatement("select count(*) from ItemMaster where SKU=?");
-		skuCheck.setInt(1, SKU);
-		ResultSet results = skuCheck.executeQuery();
-		results.next();
-		if(results.getInt(1)==1) {
-			return postEditItem(body, SKU);
-		}
-		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
-		statement.setInt(1, SKU);
-		try {
-			String name = jsonObject.getString("Name");
-			statement.setString(2, name);
-		}catch(JSONException e) {
-			statement.setNull(2, Types.VARCHAR);
-		}
-		try {
-			String description = jsonObject.getString("Description");
-			statement.setString(3, description);
-		}catch(JSONException e) {
-			statement.setNull(3, Types.VARCHAR);
-		}
-		try {
-			String thumbnail = jsonObject.getString("Thumbnail");
-			statement.setString(4, thumbnail);
-		}catch(JSONException e) {
-			statement.setNull(4, Types.VARCHAR);
-		}
-		statement.executeUpdate();
-		JSONObject json = new JSONObject()
-				.put("sucess", "added item successfuly")
-				.put("SKU", SKU)
-				.put("URI", "/item/"+SKU);
-		return Response.created(URI.create("/item/"+SKU)).entity(json).build();
-	}
-
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}")
-	public Response postEditItem(String body, @PathParam("SKU") int SKU) throws SQLException {
-		Connection connection = connectionFactory.getConnection();
-		PreparedStatement skuCheck = connection.prepareStatement("select count(*) from ItemMaster where SKU=?");
-		skuCheck.setInt(1, SKU);
-		ResultSet results = skuCheck.executeQuery();
-		results.next();
-		if(results.getInt(1)!=1) {
-			JSONObject json = new JSONObject()
-					.put("error", "SKU not found")
-					.put("token", SKU);
-			return Response.status(Status.NOT_FOUND).entity(json).build();
-		}
+	public Response postAddSKU(String body, @PathParam("SKU") int SKU) throws DatabaseException {
+		Item item = new Item();
+		item.setSKU(SKU);
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		try {
-			String name = jsonObject.getString("Name");
-			PreparedStatement statement = connection.prepareStatement("update ItemMaster set ItemName=? where SKU=?");
-			statement.setString(1, name);
-			statement.setInt(2, SKU);
-			statement.executeUpdate();
-		}catch(JSONException e) {
-			if(jsonObject.has("Name")) {
-				PreparedStatement statement = connection.prepareStatement("update ItemMaster set ItemName=? where SKU=?");
-				statement.setNull(1, Types.VARCHAR);
-				statement.setInt(2, SKU);
-				statement.executeUpdate();
-			}
-		}
+			item.setName(jsonObject.getString("Name"));
+		}catch(JSONException e) {}
 		try {
-			String description = jsonObject.getString("Description");
-			PreparedStatement statement = connection.prepareStatement("update ItemMaster set ItemDescription=? where SKU=?");
-			statement.setString(1, description);
-			statement.setInt(2, SKU);
-			statement.executeUpdate();
-		}catch(JSONException e) {
-			if(jsonObject.has("Description")) {
-				PreparedStatement statement = connection.prepareStatement("update ItemMaster set ItemDescription=? where SKU=?");
-				statement.setNull(1, Types.VARCHAR);
-				statement.setInt(2, SKU);
-				statement.executeUpdate();
-			}
-		}
+			item.setDescription(jsonObject.getString("Description"));
+		}catch(JSONException e) {}
 		try {
-			String thumbnails = jsonObject.getString("Thumbnail");
-			PreparedStatement statement = connection.prepareStatement("update ItemMaster set ItemThumbnails=? where SKU=?");
-			statement.setString(1, thumbnails);
-			statement.setInt(2, SKU);
-			statement.executeUpdate();
-		}catch(JSONException e) {
-			if(jsonObject.has("Thumbnail")) {
-				PreparedStatement statement = connection.prepareStatement("update ItemMaster set ItemThumbnails=? where SKU=?");
-				statement.setNull(1, Types.VARCHAR);
-				statement.setInt(2, SKU);
-				statement.executeUpdate();
-			}
-		}
+			item.setDescription(jsonObject.getString("Thumbnail"));
+		}catch(JSONException e) {}
+		boolean created = itemDAO.addItem(item);
 		JSONObject json = new JSONObject()
-				.put("sucess", "updated item successfuly")
-				.put("SKU", SKU)
-				.put("URI", "/item/"+SKU);
-		return Response.ok().entity(json).build();
+				.put("SKU", SKU);
+		if(item.getName()!=null)
+			json.put("Name", item.getName());
+		else
+			json.put("Name", JSONObject.NULL);
+		if(item.getDescription()!=null)
+			json.put("Description", item.getDescription());
+		else
+			json.put("Description", JSONObject.NULL);
+		if(item.getThumbnail()!=null)
+			json.put("Thumbnail", item.getThumbnail());
+		else
+			json.put("Thumbnail", JSONObject.NULL);
+		if(created)
+			return Response.created(UriBuilder.fromMethod(ItemResource.class, "postAddSKU").build(SKU)).entity(json).build();
+		else
+			return Response.ok().entity(json).build();
+	}
+
+	@PUT
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("{SKU}")
+	public Response putEditItem(String body, @PathParam("SKU") int SKU) throws DatabaseException {
+		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
+		Item item = new Item();
+		Item defaultItem = itemDAO.getItem(SKU);
+		try {
+			item.setSKU(jsonObject.getInt("SKU"));
+			Log.debug("SKU from JSON");
+		}catch(JSONException e) {
+			item.setSKU(SKU);
+			Log.debug("SKU from Param");
+		}
+		try {
+			item.setName(jsonObject.getString("Name"));
+			Log.debug("Name from JSON");
+		}catch(JSONException e) {
+			if(jsonObject.has("Name")){
+				item.setName(null);
+				Log.debug("Name from null");
+			}else{
+				item.setName(defaultItem.getName());
+				Log.debug("Name from default");
+			}
+		}
+		try {
+			item.setDescription(jsonObject.getString("Description"));
+			Log.debug("Description from JSON");
+		}catch(JSONException e) {
+			if(jsonObject.has("Description")){
+				item.setDescription(null);
+				Log.debug("Description from null");
+			}else{
+				item.setDescription(defaultItem.getDescription());
+				Log.debug("Description from default");
+			}
+		}
+		try {
+			item.setThumbnail(jsonObject.getString("Thumbnail"));
+			Log.debug("Thumbnail from JSON");
+		}catch(JSONException e) {
+			if(jsonObject.has("Thumbnail")){
+				item.setThumbnail(null);
+				Log.debug("Thumbnail from null");
+			}else{
+				item.setThumbnail(defaultItem.getDescription());
+				Log.debug("Thumbnail from default");
+			}
+		}
+		boolean updated = itemDAO.updateItem(SKU, item);
+		if(updated){
+			JSONObject json = new JSONObject()
+					.put("SKU", SKU);
+			if(item.getName()!=null)
+				json.put("Name", item.getName());
+			else
+				json.put("Name", JSONObject.NULL);
+			if(item.getDescription()!=null)
+				json.put("Description", item.getDescription());
+			else
+				json.put("Description", JSONObject.NULL);
+			if(item.getThumbnail()!=null)
+				json.put("Thumbnail", item.getThumbnail());
+			else
+				json.put("Thumbnail", JSONObject.NULL);
+			return Response.ok().entity(json).build();
+		}else{
+			return Response.status(Status.NOT_FOUND).build();
+		}
 	}
 	
 	@DELETE
 	@Path("{SKU}")
-	public Response deleteItem(@PathParam("SKU") int SKU) throws SQLException {
-		Connection connection = connectionFactory.getConnection();
-		PreparedStatement statement = connection.prepareStatement("delete from ItemMaster where SKU=?");
-		statement.setInt(1, SKU);
-		statement.executeUpdate();
-		JSONObject json = new JSONObject()
-				.put("sucess", "item deleted successfuly")
-				.put("SKU", SKU);
-		return Response.ok().entity(json).build();
+	public Response deleteItem(@PathParam("SKU") int SKU) throws DatabaseException {
+		boolean deleted = itemDAO.deleteItem(SKU);
+		if(deleted)
+			return Response.noContent().build();
+		else
+			return Response.status(Status.NOT_FOUND).build();
 	}
 	
 	@GET
@@ -270,8 +303,8 @@ public class ItemResource {
 	}
 	
 	@GET
-	@Path("{SKU}/attribute/{ID}")
-	public Response getAttribute(@PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException {
+	@Path("attribute/{ID}")
+	public Response getAttribute(@PathParam("ID") int ID) throws SQLException {
 		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("select * from ItemAttributeMaster where ItemAttributeID=?");
 		statement.setInt(1, ID);
@@ -292,16 +325,10 @@ public class ItemResource {
 		return Response.ok(json).build();
 	}
 	
-	@GET
-	@Path("attribute/{ID}")
-	public Response getAttribute0(@PathParam("ID") int ID) throws SQLException {
-		return getAttribute(-1, ID);
-	}
-	
-	@PUT
+	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attribute/{ID}")
-	public Response putAddAttribute(String body, @PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException {
+	public Response postAddAttribute(String body, @PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException {
 		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into ItemAttributeMaster (ItemAttributeID, SKU, Color, Size) values (?, ?, ?, ?)");
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from ItemAttributeMaster where ItemAttributeID=?");
@@ -309,7 +336,7 @@ public class ItemResource {
 		ResultSet results = idCheck.executeQuery();
 		results.next();
 		if(results.getInt(1)==1) {
-			return postEditAttribute(body, SKU, ID);
+			return putEditAttribute(body, ID);
 		}
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		statement.setInt(1, ID);
@@ -334,10 +361,10 @@ public class ItemResource {
 		return Response.created(URI.create("/item/"+SKU+"/attribute/"+ID)).entity(json).build();
 	}
 
-	@PUT
+	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attribute")
-	public Response putAddAttributeNoID(String body, @PathParam("SKU") int SKU) throws SQLException {
+	public Response postAddAttributeNoID(String body, @PathParam("SKU") int SKU) throws SQLException {
 		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("insert into ItemAttributeMaster (SKU, Color, Size) values (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
@@ -365,10 +392,10 @@ public class ItemResource {
 		return Response.created(URI.create("/item/"+SKU+"/attribute/"+ID)).entity(json).build();
 	}
 	
-	@POST
+	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("{SKU}/attribute/{ID}")
-	public Response postEditAttribute(String body, @PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException {
+	@Path("attribute/{ID}")
+	public Response putEditAttribute(String body, @PathParam("ID") int ID) throws SQLException {
 		Connection connection = connectionFactory.getConnection();
 		PreparedStatement idCheck = connection.prepareStatement("select count(*) from ItemAttributeMaster where ItemAttributeID=?");
 		idCheck.setInt(1, ID);
@@ -411,24 +438,13 @@ public class ItemResource {
 		}
 		JSONObject json = new JSONObject()
 				.put("sucess", "updated attribute successfuly")
-				.put("ID", ID);
-		if(SKU!=-1)
-			json.put("URI", "/item/"+SKU+"/attribute/"+ID);
-		else
-			json.put("URI", "/item/attribute/"+ID);
+				.put("ID", ID).put("URI", "/item/attribute/"+ID);
 		return Response.ok().entity(json).build();
 	}
 	
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("attribute/{ID}")
-	public Response postEditAttribute0(String body, @PathParam("ID") int ID) throws SQLException {
-		return postEditAttribute(body, -1, ID);
-	}
-	
 	@DELETE
-	@Path("{SKU}/attribute/{ID}")
-	public Response deleteAttribute(@PathParam("SKU") int SKU, @PathParam("ID") int ID) throws SQLException {
+	@Path("attribute/{ID}")
+	public Response deleteAttribute(@PathParam("ID") int ID) throws SQLException {
 		Connection connection = connectionFactory.getConnection();
 		PreparedStatement statement = connection.prepareStatement("delete from ItemAttributeMaster where ItemAttributeID=?");
 		statement.setInt(1, ID);
@@ -437,11 +453,5 @@ public class ItemResource {
 				.put("sucess", "attribute deleted successfuly")
 				.put("ID", ID);
 		return Response.ok().entity(json).build();
-	}
-	
-	@DELETE
-	@Path("attribute/{ID}")
-	public Response deleteAttribute0(@PathParam("ID") int ID) throws SQLException {
-		return deleteAttribute(-1, ID);
 	}
 }
