@@ -134,6 +134,8 @@ public class ItemResource {
 	@Path("{SKU}")
 	public Response getItem(@PathParam("SKU") int SKU) throws DatabaseException {
 		Item item = itemDAO.getItem(SKU);
+		if(item==null)
+			return Response.status(Status.NOT_FOUND).build();
 		JSONObject json = new JSONObject()
 				.put("SKU", SKU);
 		if(item.getName()!=null)
