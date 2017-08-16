@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.domain;
 
 public class Item {
 	private int SKU;

@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.dao.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,6 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import com.arjvik.arjmart.api.jdbc.ConnectionFactory;
+import com.arjvik.arjmart.api.domain.Item;
+import com.arjvik.arjmart.api.dao.DatabaseException;
+import com.arjvik.arjmart.api.dao.ItemDAO;
 
 public class JDBCItemDAO implements ItemDAO {
 	

@@ -30,6 +30,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONTokener;
 
+import com.arjvik.arjmart.api.dao.DatabaseException;
+import com.arjvik.arjmart.api.dao.ItemDAO;
+import com.arjvik.arjmart.api.jdbc.ConnectionFactory;
+import com.arjvik.arjmart.api.domain.Item;
+
 import de.jupf.staticlog.Log;
 
 @Path("/item")

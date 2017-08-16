@@ -4,7 +4,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import com.arjvik.arjmart.api.DatabaseException;
+import com.arjvik.arjmart.api.dao.DatabaseException;
 
 @Provider
 public class DatabaseExceptionMapper implements ExceptionMapper<DatabaseException> {

@@ -1,6 +1,8 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.dao;
 
 import java.util.List;
+
+import com.arjvik.arjmart.api.domain.Item;
 
 public interface ItemDAO {
 	public Item getItem(int SKU) throws DatabaseException;

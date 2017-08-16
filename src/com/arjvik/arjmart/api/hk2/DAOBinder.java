@@ -4,8 +4,8 @@ import javax.inject.Singleton;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
-import com.arjvik.arjmart.api.ItemDAO;
-import com.arjvik.arjmart.api.JDBCItemDAO;
+import com.arjvik.arjmart.api.dao.ItemDAO;
+import com.arjvik.arjmart.api.dao.impl.JDBCItemDAO;
 
 public class DAOBinder extends AbstractBinder {
 	@Override

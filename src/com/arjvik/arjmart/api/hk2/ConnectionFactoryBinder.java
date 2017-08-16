@@ -4,7 +4,7 @@ import javax.inject.Singleton;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
-import com.arjvik.arjmart.api.ConnectionFactory;
+import com.arjvik.arjmart.api.jdbc.ConnectionFactory;
 
 public class ConnectionFactoryBinder extends AbstractBinder {
 	@Override

@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.jdbc;
 
 import java.io.IOException;
 import java.io.InputStream;
