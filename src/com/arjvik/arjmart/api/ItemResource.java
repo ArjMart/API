@@ -195,6 +195,8 @@ public class ItemResource {
 		JSONObject jsonObject = new JSONObject(new JSONTokener(body));
 		Item item = new Item();
 		Item defaultItem = itemDAO.getItem(SKU);
+		if(defaultItem==null)
+			return Response.status(Status.NOT_FOUND).build();
 		try {
 			item.setSKU(jsonObject.getInt("SKU"));
 			Log.debug("SKU from JSON");
