@@ -30,11 +30,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONTokener;
 
-import com.arjvik.arjmart.api.dao.DatabaseException;
-import com.arjvik.arjmart.api.dao.ItemDAO;
-import com.arjvik.arjmart.api.jdbc.ConnectionFactory;
-import com.arjvik.arjmart.api.domain.Item;
-
 import de.jupf.staticlog.Log;
 
 @Path("/item")
@@ -44,11 +39,13 @@ public class ItemResource {
 	private static final int MAX_RECORDS = 100;
 	
 	private ItemDAO itemDAO;
+	private ItemAttributeDAO itemAttributeDAO;
 	private ConnectionFactory connectionFactory;
 	
 	@Inject
-	public ItemResource(ItemDAO itemDAO, ConnectionFactory connectionFactory) {
+	public ItemResource(ItemDAO itemDAO, ItemAttributeDAO itemAttributeDAO, ConnectionFactory connectionFactory) {
 		this.itemDAO = itemDAO;
+		this.itemAttributeDAO = itemAttributeDAO;
 		this.connectionFactory = connectionFactory;
 	}
 	
@@ -140,7 +137,7 @@ public class ItemResource {
 	public Response getItem(@PathParam("SKU") int SKU) throws DatabaseException {
 		Item item = itemDAO.getItem(SKU);
 		if(item==null)
-			return Response.status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).entity(null).build();
 		JSONObject json = new JSONObject()
 				.put("SKU", SKU);
 		if(item.getName()!=null)
@@ -175,6 +172,8 @@ public class ItemResource {
 			item.setDescription(jsonObject.getString("Thumbnail"));
 		}catch(JSONException e) {}
 		boolean created = itemDAO.addItem(item);
+		if(!created)
+			return Response.status(Status.CONFLICT).entity(null).build();
 		JSONObject json = new JSONObject()
 				.put("SKU", SKU);
 		if(item.getName()!=null)
@@ -189,10 +188,7 @@ public class ItemResource {
 			json.put("Thumbnail", item.getThumbnail());
 		else
 			json.put("Thumbnail", JSONObject.NULL);
-		if(created)
-			return Response.created(UriBuilder.fromMethod(ItemResource.class, "postAddSKU").build(SKU)).entity(json).build();
-		else
-			return Response.ok().entity(json).build();
+		return Response.created(UriBuilder.fromMethod(ItemResource.class, "postAddSKU").build(SKU)).entity(json).build();
 	}
 
 	@PUT
@@ -203,7 +199,7 @@ public class ItemResource {
 		Item item = new Item();
 		Item defaultItem = itemDAO.getItem(SKU);
 		if(defaultItem==null)
-			return Response.status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).entity(null).build();
 		try {
 			item.setSKU(jsonObject.getInt("SKU"));
 			Log.debug("SKU from JSON");
@@ -265,7 +261,7 @@ public class ItemResource {
 				json.put("Thumbnail", JSONObject.NULL);
 			return Response.ok().entity(json).build();
 		}else{
-			return Response.status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).entity(null).build();
 		}
 	}
 	
@@ -276,61 +272,53 @@ public class ItemResource {
 		if(deleted)
 			return Response.noContent().build();
 		else
-			return Response.status(Status.NOT_FOUND).build();
+			return Response.status(Status.NOT_FOUND).entity(null).build();
 	}
+	
+	// ATTRIBUTE STARTS HERE
 	
 	@GET
 	@Path("{SKU}/attribute")
-	public Response getAllAttribute(@PathParam("SKU") int SKU) throws SQLException {
-		Connection connection = connectionFactory.getConnection();
-		PreparedStatement statement = connection.prepareStatement("select * from ItemAttributeMaster where SKU=?");
-		statement.setInt(1, SKU);
-		ResultSet resultSet = statement.executeQuery();
+	public Response getAllAttribute(@PathParam("SKU") int SKU) throws DatabaseException {
+		List<ItemAttribute> attributes = itemAttributeDAO.getItemAttributeBySKU(SKU);
 		JSONObject json = new JSONObject();
-		JSONArray attributes = new JSONArray();
-		int rowCount=0;
-		while (resultSet.next()) {
-			JSONObject attribute= new JSONObject()
-					.put("ID", resultSet.getInt("ItemAttributeID"));
-			String color = resultSet.getString("Color");
-			if(color!=null)
-				attribute.put("Color", color);
+		JSONArray jsonAttributes = new JSONArray();
+		for (ItemAttribute attribute : attributes) {
+			JSONObject jsonAttribute = new JSONObject()
+					.put("ID", attribute.getID())
+					.put("SKU", SKU);
+			if(attribute.getColor()!=null)
+				jsonAttribute.put("Color", attribute.getColor());
 			else
-				attribute.put("Color", JSONObject.NULL);
-			String size = resultSet.getString("Size");
-			if(size!=null)
-				attribute.put("Size", size);
+				jsonAttribute.put("Color", JSONObject.NULL);
+			if(attribute.getSize()!=null)
+				jsonAttribute.put("Size", attribute.getSize());
 			else
-				attribute.put("size", JSONObject.NULL);
-			
-			attributes.put(attribute);
-			rowCount++;
+				jsonAttribute.put("Size", JSONObject.NULL);
+			jsonAttributes.put(jsonAttribute);
 		}
-		json.put("attributes", attributes)
-			.put("count", rowCount);
+		json.put("attributes", jsonAttributes)
+			.put("count", attributes.size());
 		return Response.ok(json).build();
 	}
 	
 	@GET
 	@Path("attribute/{ID}")
-	public Response getAttribute(@PathParam("ID") int ID) throws SQLException {
-		Connection connection = connectionFactory.getConnection();
-		PreparedStatement statement = connection.prepareStatement("select * from ItemAttributeMaster where ItemAttributeID=?");
-		statement.setInt(1, ID);
-		ResultSet resultSet = statement.executeQuery();
+	public Response getAttribute(@PathParam("ID") int ID) throws DatabaseException {
+		ItemAttribute itemAttribute = itemAttributeDAO.getItemAttribute(ID);
+		if(itemAttribute==null)
+			return Response.status(Status.NOT_FOUND).entity(null).build();
 		JSONObject json = new JSONObject()
-				.put("ID", resultSet.getInt("ItemAttributeID"))
-				.put("SKU", resultSet.getInt("SKU"));
-		String color = resultSet.getString("Color");
-		if(color!=null)
-			json.put("Color", color);
+				.put("ID", ID)
+				.put("SKU", itemAttribute.getSKU());
+		if(itemAttribute.getColor()!=null)
+			json.put("Color", itemAttribute.getColor());
 		else
 			json.put("Color", JSONObject.NULL);
-		String size = resultSet.getString("Size");
-		if(size!=null)
-			json.put("Size", size);
+		if(itemAttribute.getSize()!=null)
+			json.put("Size", itemAttribute.getSize());
 		else
-			json.put("size", JSONObject.NULL);
+			json.put("Size", JSONObject.NULL);
 		return Response.ok(json).build();
 	}
 	

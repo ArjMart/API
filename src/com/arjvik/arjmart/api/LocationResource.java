@@ -30,8 +30,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONTokener;
 
-import com.arjvik.arjmart.api.jdbc.ConnectionFactory;
-
 @Path("/location")
 @Produces(MediaType.APPLICATION_JSON)
 public class LocationResource {
