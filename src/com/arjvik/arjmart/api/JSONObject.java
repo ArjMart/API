@@ -32,6 +32,12 @@ package com.arjvik.arjmart.api;
 
 import org.json.*;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializable;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -104,8 +110,10 @@ import java.util.Set;
  * @author JSON.org
  * @version 2016-08-15
  */
-public class JSONObject extends org.json.JSONObject{
-    /**
+public class JSONObject extends org.json.JSONObject implements JsonSerializable{
+    private static final int INDENT_FACTOR = 2;
+
+	/**
      * JSONObject.NULL is equivalent to the value that JavaScript calls null,
      * whilst Java's null is equivalent to the value that JavaScript calls
      * undefined.
@@ -1977,4 +1985,15 @@ public class JSONObject extends org.json.JSONObject{
         }
         return results;
     }
+
+	@Override
+	public void serialize(JsonGenerator jg, SerializerProvider sp) throws IOException {
+		jg.writeRaw("GENERATED IN MODIFIED JSON OBJECT--MOVE TO POJO ASAP\n\n");
+		jg.writeRaw(sp.isEnabled(SerializationFeature.INDENT_OUTPUT)?toString(INDENT_FACTOR):toString());
+	}
+
+	@Override
+	public void serializeWithType(JsonGenerator jg, SerializerProvider sp, TypeSerializer ts) throws IOException {
+		serialize(jg, sp);		
+	}
 }

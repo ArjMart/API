@@ -14,67 +14,51 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
-import org.json.JSONArray;
-
-import com.arjvik.arjmart.api.JSONObject;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
+import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
+import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
 
 @Provider
-@Priority(Priorities.ENTITY_CODER+1)
+@Priority(Priorities.ENTITY_CODER)
 public class PrettyPrintEnvelopeFilter implements ContainerResponseFilter {
-
-	private static final int NUM_SPACES_TO_INDENT = 2;
 	
 	@Context
 	private UriInfo uriInfo;
 	
 	@Override
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-		Object obj = responseContext.getEntity();
-		if(!(obj instanceof JSONObject))
-			return;
-		JSONObject json = (JSONObject) obj;
+		Object entity = responseContext.getEntity();
 		MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
-		if(queryParams.containsKey("callback")||queryParams.containsKey("envelope")){
-			JSONObject envelope = new JSONObject();
-			int status = responseContext.getStatus();
+		if(queryParams.containsKey("callback") || queryParams.containsKey("envelope")){
+			entity = getEnvelope(responseContext.getStatus(), responseContext.getStringHeaders(), entity);
 			responseContext.setStatusInfo(Status.OK);
-			envelope.put("status", status);
-			MultivaluedMap<String, String> headers = responseContext.getStringHeaders();
-			JSONObject jsonHeaders = new JSONObject();
-			for (String headerName : headers.keySet()) {
-				List<String> value = headers.get(headerName);
-				if(value.size()==0){
-					jsonHeaders.put(headerName, JSONObject.NULL);
-				}else if(value.size()==1){
-					jsonHeaders.put(headerName, value.get(0));
-				}else{
-					JSONArray valueArray = new JSONArray();
-					for (String string : value) {
-						valueArray.put(string);
-					}
-					jsonHeaders.put(headerName, valueArray);
-				}
-			}
-			envelope.put("headers", jsonHeaders);
-			envelope.put("response", json);
-			String stringEnvelope;
-			if(uriInfo.getQueryParameters().containsKey("pretty")){
-				stringEnvelope = envelope.toString(NUM_SPACES_TO_INDENT);
-			}else{
-				stringEnvelope = envelope.toString();
-			}
 			if(queryParams.containsKey("callback")){
-				responseContext.setEntity(queryParams.getFirst("callback")+"("+stringEnvelope+")");
-			}else{
-				responseContext.setEntity(stringEnvelope);
+				entity = new CallbackEntity(queryParams.getFirst("callback"), entity);
 			}
-		}else{
-			if(queryParams.containsKey("pretty")){
-				responseContext.setEntity(json.toString(NUM_SPACES_TO_INDENT));
-			}else{
-				responseContext.setEntity(json.toString());
-			}
+			responseContext.setEntity(entity);
+		}
+		if(uriInfo.getQueryParameters().containsKey("pretty")){
+			ObjectWriterInjector.set(new ObjectWriterModifier() {
+				@Override
+				public ObjectWriter modify(EndpointConfigBase<?> ecb, MultivaluedMap<String, Object> m, Object o, ObjectWriter ow, JsonGenerator jg) throws IOException {
+					jg.useDefaultPrettyPrinter();
+		            return ow;
+				}
+			});
 		}
 	}
 
+	private EnvelopeEntity getEnvelope(int status, MultivaluedMap<String, String> headers, Object entity) {
+		EnvelopeEntity envelope = new EnvelopeEntity(status, entity);
+		for (String key : headers.keySet()) {
+			List<String> value = headers.get(key);
+			if(value.size()>1)
+				envelope.putHeader(key, value);
+			else
+				envelope.putHeader(key, value.get(0));
+		}
+		return envelope;
+	}
 }

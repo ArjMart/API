@@ -29,33 +29,44 @@ public class ETagFilter implements ContainerRequestFilter, ContainerResponseFilt
 	
 	@Override
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-		try {
-			if(requestContext.getMethod()!="GET")
-				return;
-			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			String entity = ((String) responseContext.getEntity());
-			if(entity==null)
-				return;
-			byte[] etagBytes = md.digest(entity.getBytes());
-			String ETag = toHexString(etagBytes);
-			if(requestContext.getPropertyNames().contains("If-None-Match")){
-				if(requestContext.getProperty("If-None-Match").equals(ETag)){
-					responseContext.setEntity(null);
-					responseContext.setStatusInfo(Status.NOT_MODIFIED);
-					MultivaluedMap<String,Object> headers = responseContext.getHeaders();
-					for (String string : headers.keySet()) {
-						headers.remove(string);
-					}
+		if(requestContext.getMethod()!="GET" || responseContext.getStatus()!=200)
+			return;
+		String ETag = generateETag(responseContext.getEntity());
+		if(ETag==null)
+			return;
+		if(requestContext.getPropertyNames().contains("If-None-Match")){
+			if(requestContext.getProperty("If-None-Match").equals(ETag)){
+				responseContext.setEntity(null);
+				responseContext.setStatusInfo(Status.NOT_MODIFIED);
+				MultivaluedMap<String,Object> headers = responseContext.getHeaders();
+				for (String string : headers.keySet()) {
+					headers.remove(string);
 				}
 			}
-			responseContext.getHeaders().putSingle(HttpHeaders.ETAG, "\""+ETag+"\"");
-			CacheControl cc = new CacheControl();
-			cc.setMaxAge(300);
-			cc.setPrivate(true);
-			cc.setNoStore(true);
-			responseContext.getHeaders().putSingle(HttpHeaders.CACHE_CONTROL, cc.toString());
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+		}
+		responseContext.getHeaders().putSingle(HttpHeaders.ETAG, "\""+ETag+"\"");
+		CacheControl cc = new CacheControl();
+		cc.setMaxAge(300);
+		cc.setPrivate(true);
+		cc.setNoStore(true);
+		responseContext.getHeaders().putSingle(HttpHeaders.CACHE_CONTROL, cc.toString());
+	}
+	
+	private static String generateETag(Object obj){
+		if(obj==null)
+			return null;
+		if(obj instanceof String){
+			try {
+				MessageDigest md = MessageDigest.getInstance("SHA-256");
+				String entity = (String) obj;
+				byte[] etagBytes = md.digest(entity.getBytes());
+				return toHexString(etagBytes);
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}else{
+			return null;
 		}
 	}
 	
