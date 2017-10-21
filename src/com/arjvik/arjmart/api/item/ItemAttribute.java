@@ -9,6 +9,7 @@ public class ItemAttribute {
 		
 	}
 	public ItemAttribute(int ID, int SKU, String color, String size) {
+		this();
 		this.ID = ID;
 		this.SKU = SKU;
 		this.color = color;

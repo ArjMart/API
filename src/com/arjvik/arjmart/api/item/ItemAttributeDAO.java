@@ -9,7 +9,7 @@ public interface ItemAttributeDAO {
 
 	public List<ItemAttribute> getItemAttributeBySKU(int SKU) throws ItemNotFoundException, DatabaseException;
 	
-	public int addItemAttribute(ItemAttribute itemAttribute) throws DatabaseException;
+	public int addItemAttribute(ItemAttribute itemAttribute) throws ItemNotFoundException, DatabaseException;
 	
 	public void updateItemAttribute(int ID, ItemAttribute itemAttribute) throws ItemAttributeNotFoundException, ItemNotFoundException, DatabaseException;
 	

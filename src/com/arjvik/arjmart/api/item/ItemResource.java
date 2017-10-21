@@ -28,11 +28,13 @@ public class ItemResource {
 	
 	private ItemDAO itemDAO;
 	private ItemAttributeDAO itemAttributeDAO;
+	private ItemPriceDAO itemPriceDAO;
 	
 	@Inject
-	public ItemResource(ItemDAO itemDAO, ItemAttributeDAO itemAttributeDAO) {
+	public ItemResource(ItemDAO itemDAO, ItemAttributeDAO itemAttributeDAO, ItemPriceDAO itemPriceDAO) {
 		this.itemDAO = itemDAO;
 		this.itemAttributeDAO = itemAttributeDAO;
+		this.itemPriceDAO = itemPriceDAO;
 	}
 	
 	@GET
@@ -85,7 +87,9 @@ public class ItemResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}")
-	public Response postAddSKU(Item item, @PathParam("SKU") int SKU) throws ItemAlreadyExistsException, DatabaseException {
+	public Response postAddSKU(Item item, @PathParam("SKU") int SKU) throws InvalidSKUException, ItemAlreadyExistsException, DatabaseException {
+		if(SKU==0)
+			throw new InvalidSKUException(0);
 		item.setSKU(SKU);
 		itemDAO.addItem(item);
 		return Response.created(UriBuilder.fromMethod(ItemResource.class, "postAddSKU").build(SKU)).entity(item).build();
@@ -95,6 +99,8 @@ public class ItemResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}")
 	public Response putEditItem(Item item, @PathParam("SKU") int SKU) throws ItemNotFoundException, DatabaseException {
+		if(item.getSKU()==0)
+			item.setSKU(SKU);
 		itemDAO.updateItem(SKU, item);
 		return Response.ok().entity(item).build();
 	}
@@ -125,16 +131,18 @@ public class ItemResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attribute")
-	public Response postAddAttribute(ItemAttribute itemAttribute, @PathParam("SKU") int SKU) throws DatabaseException {
+	public Response postAddAttribute(ItemAttribute itemAttribute, @PathParam("SKU") int SKU) throws ItemNotFoundException, DatabaseException  {
+		itemAttribute.setSKU(SKU);
 		int ID = itemAttributeDAO.addItemAttribute(itemAttribute);
 		itemAttribute.setID(ID);
-		return Response.created(UriBuilder.fromUri("{SKU}/attribute/{ID}").build(SKU,ID)).entity(itemAttribute).build();
+		return Response.created(UriBuilder.fromMethod(ItemResource.class, "getAttribute").build(ID)).entity(itemAttribute).build();
 	}
 	
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("attribute/{ID}")
 	public Response putEditAttribute(ItemAttribute itemAttribute, @PathParam("ID") int ID) throws ItemAttributeNotFoundException, ItemNotFoundException, DatabaseException {
+		itemAttribute.setID(ID);
 		itemAttributeDAO.updateItemAttribute(ID, itemAttribute);
 		return Response.ok(itemAttribute).build();
 	}
@@ -144,5 +152,21 @@ public class ItemResource {
 	public Response deleteAttribute(@PathParam("ID") int ID) throws ItemAttributeNotFoundException, DatabaseException {
 		itemAttributeDAO.deleteItemAttribute(ID);
 		return Response.noContent().build();
+	}
+	
+	// PRICE STARTS HERE
+	
+	@GET
+	@Path("attribute/{ID}/price")
+	public Response getPrice(@PathParam("ID") int ItemAttributeID) throws DatabaseException {
+		ItemPrice itemPrice = itemPriceDAO.getItemPrice(ItemAttributeID);
+		return Response.ok(itemPrice).build();
+	}
+	
+	@PUT
+	@Path("attribute/{ID}/price")
+	public Response setPrice(ItemPrice itemPrice, @PathParam("ID") int ItemAttributeID) throws ItemAttributeNotFoundException, DatabaseException {
+		itemPriceDAO.setItemPrice(ItemAttributeID, itemPrice);
+		return Response.ok(itemPrice).build();
 	}
 }

@@ -72,7 +72,7 @@ public class JDBCItemAttributeDAO implements ItemAttributeDAO {
 	}
 
 	@Override
-	public int addItemAttribute(ItemAttribute itemAttribute) throws DatabaseException {
+	public int addItemAttribute(ItemAttribute itemAttribute) throws ItemNotFoundException, DatabaseException {
 		try{
 			Connection connection = connectionFactory.getConnection();
 			PreparedStatement statement = connection.prepareStatement("insert into ItemAttributeMaster (SKU, Color, Size) values (?, ?, ?)",Statement.RETURN_GENERATED_KEYS);
@@ -83,6 +83,8 @@ public class JDBCItemAttributeDAO implements ItemAttributeDAO {
 			ResultSet keys = statement.getGeneratedKeys();
 			keys.next();
 			return keys.getInt(1);
+		} catch (SQLIntegrityConstraintViolationException e) {
+			throw new ItemNotFoundException(itemAttribute.getSKU(),e);
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
 		}
@@ -93,17 +95,19 @@ public class JDBCItemAttributeDAO implements ItemAttributeDAO {
 		getItemAttribute(ID);
 		try {
 			Connection connection = connectionFactory.getConnection();
-			PreparedStatement statement = connection.prepareStatement("update ItemAttributeMaster set ItemAttributeID = ?, SKU = ?, Color = ?, Size = ? where ItemAttributeID = ?");
-			statement.setInt(1, itemAttribute.getID());
-			statement.setInt(2, itemAttribute.getSKU());
+			//PreparedStatement statement = connection.prepareStatement("update ItemAttributeMaster set ItemAttributeID = ?, SKU = ?, Color = ?, Size = ? where ItemAttributeID = ?");
+			PreparedStatement statement = connection.prepareStatement("update ItemAttributeMaster set SKU = ?, Color = ?, Size = ? where ItemAttributeID = ?");
+			//statement.setInt(1, itemAttribute.getID());
+			statement.setInt(1, itemAttribute.getSKU());
 			if(itemAttribute.getColor()!=null)
-				statement.setString(3, itemAttribute.getColor());
+				statement.setString(2, itemAttribute.getColor());
+			else
+				statement.setNull(2, Types.VARCHAR);
+			if(itemAttribute.getSize()!=null)
+				statement.setString(3, itemAttribute.getSize());
 			else
 				statement.setNull(3, Types.VARCHAR);
-			if(itemAttribute.getSize()!=null)
-				statement.setString(4, itemAttribute.getSize());
-			else
-				statement.setNull(4, Types.VARCHAR);
+			statement.setInt(4, ID);
 			statement.executeUpdate();
 		} catch (SQLIntegrityConstraintViolationException e) {
 			throw new ItemNotFoundException(itemAttribute.getSKU(),e);
