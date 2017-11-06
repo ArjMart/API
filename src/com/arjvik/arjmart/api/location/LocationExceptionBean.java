@@ -1,16 +1,16 @@
-package com.arjvik.arjmart.api.item;
+package com.arjvik.arjmart.api.location;
 
-public class ItemAttributeExceptionBean {
+public class LocationExceptionBean {
 	private String error;
 	private int ID;
 	
-	public ItemAttributeExceptionBean() {
+	public LocationExceptionBean() {
 		
 	}
-	public ItemAttributeExceptionBean(int ID) {
+	public LocationExceptionBean(int ID) {
 		this.ID = ID;
 	}
-	public ItemAttributeExceptionBean(int ID, String error) {
+	public LocationExceptionBean(int ID, String error) {
 		this.ID = ID;
 		this.error = error;
 	}

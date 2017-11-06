@@ -23,7 +23,7 @@ public class ItemExceptionBean {
 	public int getSKU() {
 		return SKU;
 	}
-	public void setSKU(int sKU) {
-		SKU = sKU;
+	public void setSKU(int SKU) {
+		this.SKU = SKU;
 	}
 }

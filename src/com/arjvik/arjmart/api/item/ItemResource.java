@@ -20,7 +20,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.arjvik.arjmart.api.DatabaseException;
 
-@Path("/item")
+@Path("/items")
 @Produces(MediaType.APPLICATION_JSON)
 public class ItemResource {
 	
