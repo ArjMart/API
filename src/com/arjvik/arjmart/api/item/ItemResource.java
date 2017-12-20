@@ -47,12 +47,14 @@ public class ItemResource {
 			limit = MAX_RECORDS;
 		}
 		List<Item> items = itemDAO.getAllItems(start,limit);
+		System.err.println(items);
 		ResponseBuilder response = Response.ok(items);
 		if(start>0){
 			int newStart = Math.max(0, start-limit);
 			Link previous = Link.fromResource(ItemResource.class).param("start", Integer.toString(newStart)).param("limit", Integer.toString(limit)).build();
 			response.links(previous);
-		}if(items.size()<limit){
+		}
+		if(items.size()<limit){
 			Link next = Link.fromResource(ItemResource.class).param("start", Integer.toString(start+limit)).param("limit", Integer.toString(limit)).build();
 			response.links(next);
 		}
@@ -115,58 +117,59 @@ public class ItemResource {
 	// ATTRIBUTE STARTS HERE
 	
 	@GET
-	@Path("{SKU}/attribute")
+	@Path("{SKU}/attributes")
 	public Response getAllAttribute(@PathParam("SKU") int SKU) throws ItemNotFoundException, DatabaseException {
 		List<ItemAttribute> attributes = itemAttributeDAO.getItemAttributeBySKU(SKU);
 		return Response.ok(attributes).build();
 	}
 	
 	@GET
-	@Path("attribute/{ID}")
-	public Response getAttribute(@PathParam("ID") int ID) throws ItemAttributeNotFoundException, DatabaseException {
-		ItemAttribute itemAttribute = itemAttributeDAO.getItemAttribute(ID);
+	@Path("{SKU}/attributes/{ID}")
+	public Response getAttribute(@PathParam("SKU") int SKU, @PathParam("ID") int ID) throws ItemAttributeNotFoundException, DatabaseException {
+		ItemAttribute itemAttribute = itemAttributeDAO.getItemAttribute(SKU, ID);
 		return Response.ok(itemAttribute).build();
 	}
 	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("{SKU}/attribute")
+	@Path("{SKU}/attributes")
 	public Response postAddAttribute(ItemAttribute itemAttribute, @PathParam("SKU") int SKU) throws ItemNotFoundException, DatabaseException  {
 		itemAttribute.setSKU(SKU);
 		int ID = itemAttributeDAO.addItemAttribute(itemAttribute);
 		itemAttribute.setID(ID);
-		return Response.created(UriBuilder.fromMethod(ItemResource.class, "getAttribute").build(ID)).entity(itemAttribute).build();
+		return Response.created(UriBuilder.fromMethod(ItemResource.class, "getAttribute").build(SKU,ID)).entity(itemAttribute).build();
 	}
 	
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("attribute/{ID}")
-	public Response putEditAttribute(ItemAttribute itemAttribute, @PathParam("ID") int ID) throws ItemAttributeNotFoundException, ItemNotFoundException, DatabaseException {
+	@Path("{SKU}/attributes/{ID}")
+	public Response putEditAttribute(ItemAttribute itemAttribute, @PathParam("SKU") int SKU, @PathParam("ID") int ID) throws ItemAttributeNotFoundException, ItemNotFoundException, DatabaseException {
+		itemAttribute.setSKU(SKU);
 		itemAttribute.setID(ID);
-		itemAttributeDAO.updateItemAttribute(ID, itemAttribute);
+		itemAttributeDAO.updateItemAttribute(SKU, ID, itemAttribute);
 		return Response.ok(itemAttribute).build();
 	}
 	
 	@DELETE
-	@Path("attribute/{ID}")
-	public Response deleteAttribute(@PathParam("ID") int ID) throws ItemAttributeNotFoundException, DatabaseException {
-		itemAttributeDAO.deleteItemAttribute(ID);
+	@Path("{SKU}/attributes/{ID}")
+	public Response deleteAttribute(@PathParam("SKU") int SKU, @PathParam("ID") int ID) throws ItemAttributeNotFoundException, DatabaseException {
+		itemAttributeDAO.deleteItemAttribute(SKU,ID);
 		return Response.noContent().build();
 	}
 	
 	// PRICE STARTS HERE
 	
 	@GET
-	@Path("attribute/{ID}/price")
-	public Response getPrice(@PathParam("ID") int ItemAttributeID) throws DatabaseException {
-		ItemPrice itemPrice = itemPriceDAO.getItemPrice(ItemAttributeID);
+	@Path("{SKU}/attributes/{ID}/price")
+	public Response getPrice(@PathParam("SKU") int SKU, @PathParam("ID") int ItemAttributeID) throws DatabaseException {
+		ItemPrice itemPrice = itemPriceDAO.getItemPrice(SKU, ItemAttributeID);
 		return Response.ok(itemPrice).build();
 	}
 	
 	@PUT
-	@Path("attribute/{ID}/price")
-	public Response setPrice(ItemPrice itemPrice, @PathParam("ID") int ItemAttributeID) throws ItemAttributeNotFoundException, DatabaseException {
-		itemPriceDAO.setItemPrice(ItemAttributeID, itemPrice);
+	@Path("{SKU}/attributes/{ID}/price")
+	public Response setPrice(ItemPrice itemPrice, @PathParam("SKU") int SKU, @PathParam("ID") int ItemAttributeID) throws ItemAttributeNotFoundException, DatabaseException {
+		itemPriceDAO.setItemPrice(SKU, ItemAttributeID, itemPrice);
 		return Response.ok(itemPrice).build();
 	}
 }

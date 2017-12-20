@@ -1,31 +1,31 @@
 package com.arjvik.arjmart.api.item;
 
 public class ItemAttribute {
-	private int ID;
 	private int SKU;
+	private int ID;
 	private String color;
 	private String size;
 	public ItemAttribute() {
 		
 	}
-	public ItemAttribute(int ID, int SKU, String color, String size) {
+	public ItemAttribute(int SKU, int ID, String color, String size) {
 		this();
-		this.ID = ID;
 		this.SKU = SKU;
+		this.ID = ID;
 		this.color = color;
 		this.size = size;
-	}
-	public int getID() {
-		return ID;
-	}
-	public void setID(int ID) {
-		this.ID = ID;
 	}
 	public int getSKU() {
 		return SKU;
 	}
 	public void setSKU(int SKU) {
 		this.SKU = SKU;
+	}
+	public int getID() {
+		return ID;
+	}
+	public void setID(int ID) {
+		this.ID = ID;
 	}
 	public String getColor() {
 		return color;

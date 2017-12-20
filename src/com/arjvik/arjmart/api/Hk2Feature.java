@@ -13,6 +13,8 @@ import com.arjvik.arjmart.api.item.ItemPriceDAO;
 import com.arjvik.arjmart.api.item.JDBCItemAttributeDAO;
 import com.arjvik.arjmart.api.item.JDBCItemDAO;
 import com.arjvik.arjmart.api.item.JDBCItemPriceDAO;
+import com.arjvik.arjmart.api.location.InventoryDAO;
+import com.arjvik.arjmart.api.location.JDBCInventoryDAO;
 import com.arjvik.arjmart.api.location.JDBCLocationDAO;
 import com.arjvik.arjmart.api.location.LocationDAO;
 
@@ -29,6 +31,7 @@ public class Hk2Feature implements Feature {
         		bind(JDBCItemAttributeDAO.class).to(ItemAttributeDAO.class).in(Singleton.class);
         		bind(JDBCItemPriceDAO.class).to(ItemPriceDAO.class).in(Singleton.class);
         		bind(JDBCLocationDAO.class).to(LocationDAO.class).in(Singleton.class);
+        		bind(JDBCInventoryDAO.class).to(InventoryDAO.class).in(Singleton.class);
         	}
         });
         return true;

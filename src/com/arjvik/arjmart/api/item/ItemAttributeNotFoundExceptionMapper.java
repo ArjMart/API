@@ -10,7 +10,7 @@ public class ItemAttributeNotFoundExceptionMapper implements ExceptionMapper<Ite
 
 	@Override
 	public Response toResponse(ItemAttributeNotFoundException e) {
-		return Response.status(Status.NOT_FOUND).entity(new ItemAttributeExceptionBean(e.getID(),"item attribute not found")).build();
+		return Response.status(Status.NOT_FOUND).entity(new ItemAttributeExceptionBean(e.getSKU(),e.getID(),"item attribute not found")).build();
 	}
 
 }

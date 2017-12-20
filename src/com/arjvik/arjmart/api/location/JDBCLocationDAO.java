@@ -26,8 +26,7 @@ public class JDBCLocationDAO implements LocationDAO {
 	
 	@Override
 	public Location getLocation(int ID) throws LocationNotFoundException, DatabaseException {
-		try {
-			Connection connection = connectionFactory.getConnection();
+		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("select * from LocationMaster where LocationID=?");
 			statement.setInt(1, ID);
 			ResultSet resultSet = statement.executeQuery();
@@ -41,9 +40,8 @@ public class JDBCLocationDAO implements LocationDAO {
 
 	@Override
 	public List<Location> getAllLocations() throws DatabaseException {
-		try {
-			Connection connection = connectionFactory.getConnection();
-			PreparedStatement statement = connection.prepareStatement("select * from LocationMaster limit ?");
+		try (Connection connection = connectionFactory.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement("select * from LocationMaster");
 			ResultSet resultSet = statement.executeQuery();
 			List<Location> locations = new ArrayList<>();
 			while (resultSet.next()) {
@@ -57,8 +55,7 @@ public class JDBCLocationDAO implements LocationDAO {
 
 	@Override
 	public int addLocation(Location location) throws DatabaseException {
-		try {
-			Connection connection = connectionFactory.getConnection();
+		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("insert into LocationMaster (Address) values (?)", Statement.RETURN_GENERATED_KEYS);
 			if(location.getAddress()!=null)
 				statement.setString(1, location.getAddress());
@@ -76,8 +73,7 @@ public class JDBCLocationDAO implements LocationDAO {
 	@Override
 	public void updateLocation(int ID, Location location) throws LocationNotFoundException, DatabaseException {
 		getLocation(ID);
-		try {
-			Connection connection = connectionFactory.getConnection();
+		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("update LocationMaster set LocationID=?, Address=? where LocationID=?");
 			statement.setInt(1, location.getID());
 			if(location.getAddress()!=null)
@@ -93,8 +89,7 @@ public class JDBCLocationDAO implements LocationDAO {
 
 	@Override
 	public void deleteLocation(int ID) throws LocationNotFoundException, DatabaseException {
-		try {
-			Connection connection = connectionFactory.getConnection();
+		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("delete from LocationMaster where LocationID=?");
 			statement.setInt(1, ID);
 			if(!(statement.executeUpdate()>0))

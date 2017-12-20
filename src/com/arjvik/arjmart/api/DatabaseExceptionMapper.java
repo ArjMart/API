@@ -9,6 +9,7 @@ public class DatabaseExceptionMapper implements ExceptionMapper<DatabaseExceptio
 
 	@Override
 	public Response toResponse(DatabaseException exception) {
+		exception.printStackTrace();
 		return Response.serverError().build();
 	}
 

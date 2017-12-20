@@ -25,8 +25,7 @@ public class JDBCItemDAO implements ItemDAO {
 
 	@Override
 	public Item getItem(int SKU) throws ItemNotFoundException, DatabaseException{
-		try{
-			Connection connection = connectionFactory.getConnection();
+		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("select * from ItemMaster where SKU=?");
 			statement.setInt(1, SKU);
 			ResultSet resultSet = statement.executeQuery();
@@ -40,9 +39,8 @@ public class JDBCItemDAO implements ItemDAO {
 
 	@Override
 	public List<Item> getAllItems(int start, int limit) throws DatabaseException {
-		try{
+		try (Connection connection = connectionFactory.getConnection()) {
 			List<Item> items = new ArrayList<>();
-			Connection connection = connectionFactory.getConnection();
 			PreparedStatement statement = connection.prepareStatement("select * from ItemMaster order by SKU limit ? offset ?");
 			statement.setInt(1, limit);
 			statement.setInt(2, start);
@@ -58,8 +56,7 @@ public class JDBCItemDAO implements ItemDAO {
 
 	@Override
 	public List<Item> searchItems(int start, int limit, String query) throws DatabaseException {
-		try{
-			Connection connection = connectionFactory.getConnection();
+		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("select * from ItemMaster where ItemName like ? escape '|' limit ? offset ?");
 			List<Item> items = new ArrayList<>();
 			String escapedQuery="%"+query.replace("%", "|%").replace("_", "|_").replace(' ', '%')+"%";
@@ -78,8 +75,7 @@ public class JDBCItemDAO implements ItemDAO {
 	
 	@Override
 	public void addItem(Item item) throws ItemAlreadyExistsException, DatabaseException {
-		try {
-			Connection connection = connectionFactory.getConnection();
+		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("insert into ItemMaster (SKU, ItemName, ItemDescription, ItemThumbnails) values (?, ?, ?, ?)");
 			statement.setInt(1, item.getSKU());
 			if(item.getName()!=null)
@@ -106,8 +102,7 @@ public class JDBCItemDAO implements ItemDAO {
 	@Override
 	public void updateItem(int SKU, Item item) throws ItemNotFoundException, DatabaseException  {
 		getItem(SKU);
-		try {
-			Connection connection = connectionFactory.getConnection();
+		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("update ItemMaster set SKU = ?, ItemName = ?, ItemDescription = ?, ItemThumbnails = ? where SKU = ?");
 			statement.setInt(1, item.getSKU());
 			if(item.getName()!=null)
@@ -131,8 +126,7 @@ public class JDBCItemDAO implements ItemDAO {
 
 	@Override
 	public void deleteItem(int SKU) throws ItemNotFoundException, DatabaseException  {
-		try{
-			Connection connection = connectionFactory.getConnection();
+		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("delete from ItemMaster where SKU=?");
 			statement.setInt(1, SKU);
 			if(!(statement.executeUpdate()>0))

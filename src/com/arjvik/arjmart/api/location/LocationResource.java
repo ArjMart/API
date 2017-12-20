@@ -5,33 +5,34 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.arjvik.arjmart.api.DatabaseException;
+import com.arjvik.arjmart.api.item.ItemAttributeNotFoundException;
 
-@Path("/location")
+@Path("/locations")
 @Produces(MediaType.APPLICATION_JSON)
 public class LocationResource {
 	
 	private LocationDAO locationDAO;
+	private InventoryDAO inventoryDAO;
 	
 	@Inject
-	public LocationResource(LocationDAO locationDAO){
+	public LocationResource(LocationDAO locationDAO, InventoryDAO inventoryDAO){
 		this.locationDAO = locationDAO;
+		this.inventoryDAO = inventoryDAO;
 	}
 	
 	@GET
-	public Response getAll(@DefaultValue("-1") @QueryParam("limit") int limit) throws DatabaseException {
+	public Response getAll() throws DatabaseException {
 		List<Location> locations = locationDAO.getAllLocations();
 		return Response.ok().entity(locations).build();
 	}
@@ -63,8 +64,38 @@ public class LocationResource {
 	
 	@DELETE
 	@Path("{ID}")
-	public Response deleteLocation(@PathParam("ID") int ID) throws LocationNotFoundException, DatabaseException{
+	public Response deleteLocation(@PathParam("ID") int ID) throws LocationNotFoundException, DatabaseException {
 		locationDAO.deleteLocation(ID);
 		return Response.noContent().build();
+	}
+	
+	// INVENTORY STARTS HERE
+	
+	@GET
+	@Path("{ID}/inventory/")
+	public Response getAllInventory(@PathParam("ID") int ID) throws DatabaseException {
+		return Response.ok(inventoryDAO.getAllInventory(ID)).build();
+	}
+	
+	@GET
+	@Path("inventory/{SKU}/{itemAttributeID}")
+	public Response getAllLocations(@PathParam("SKU") int SKU, @PathParam("itemAttributeID") int itemAttributeID) throws DatabaseException {
+		return Response.ok(inventoryDAO.getAllLocations(SKU, itemAttributeID)).build();
+	}
+	
+	@GET
+	@Path("{ID}/inventory/{SKU}/{itemAttributeID}")
+	public Response getInventory(@PathParam("SKU") int SKU, @PathParam("ID") int ID, @PathParam("itemAttributeID") int itemAttributeID) throws DatabaseException {
+		return Response.ok(inventoryDAO.getInventory(ID, SKU, itemAttributeID)).build();
+	}
+	
+	@PUT
+	@Path("{ID}/inventory/{SKU}/{itemAttributeID}")
+	public Response setInventory(Inventory inventory, @PathParam("SKU") int SKU, @PathParam("ID") int ID, @PathParam("itemAttributeID") int itemAttributeID) throws LocationNotFoundException, ItemAttributeNotFoundException, DatabaseException {
+		inventory.setLocationID(ID);
+		inventory.setSKU(SKU);
+		inventory.setItemAttributeID(itemAttributeID);
+		inventoryDAO.setInventory(inventory);
+		return Response.ok(inventory).build();
 	}
 }
