@@ -17,13 +17,17 @@ import com.arjvik.arjmart.api.location.InventoryDAO;
 import com.arjvik.arjmart.api.location.JDBCInventoryDAO;
 import com.arjvik.arjmart.api.location.JDBCLocationDAO;
 import com.arjvik.arjmart.api.location.LocationDAO;
+import com.arjvik.arjmart.api.order.JDBCOrderDAO;
+import com.arjvik.arjmart.api.order.JDBCOrderLineDAO;
+import com.arjvik.arjmart.api.order.OrderDAO;
+import com.arjvik.arjmart.api.order.OrderLineDAO;
 
 @Provider
 public class Hk2Feature implements Feature {
 
     @Override
     public boolean configure(FeatureContext context) {
-        context.register(new AbstractBinder(){
+        context.register(new AbstractBinder() {
         	@Override
         	protected void configure() {
         		bind(ConnectionFactory.class).to(ConnectionFactory.class).in(Singleton.class);
@@ -32,6 +36,8 @@ public class Hk2Feature implements Feature {
         		bind(JDBCItemPriceDAO.class).to(ItemPriceDAO.class).in(Singleton.class);
         		bind(JDBCLocationDAO.class).to(LocationDAO.class).in(Singleton.class);
         		bind(JDBCInventoryDAO.class).to(InventoryDAO.class).in(Singleton.class);
+        		bind(JDBCOrderDAO.class).to(OrderDAO.class).in(Singleton.class);
+        		bind(JDBCOrderLineDAO.class).to(OrderLineDAO.class).in(Singleton.class);
         	}
         });
         return true;

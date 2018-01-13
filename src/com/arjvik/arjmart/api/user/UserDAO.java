@@ -6,6 +6,6 @@ public interface UserDAO {
 
 	public User getUser(int ID) throws UserNotFoundException, DatabaseException;
 
-	public int addUser(User user) throws UserAlreadyFoundException, DatabaseException;
+	public int addUser(User user) throws UserAlreadyExistsException, DatabaseException;
 
 }

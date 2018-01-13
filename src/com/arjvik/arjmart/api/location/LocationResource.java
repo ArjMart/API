@@ -46,7 +46,7 @@ public class LocationResource {
 	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response postAddLocation(Location location) throws DatabaseException{
+	public Response addLocation(Location location) throws DatabaseException{
 		int ID = locationDAO.addLocation(location);
 		location.setID(ID);
 		return Response.created(UriBuilder.fromMethod(LocationResource.class, "getLocation").build(ID)).entity(location).build();
@@ -55,7 +55,7 @@ public class LocationResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
-	public Response putEditLocation(Location location, @PathParam("ID") int ID) throws LocationNotFoundException, DatabaseException {
+	public Response editLocation(Location location, @PathParam("ID") int ID) throws LocationNotFoundException, DatabaseException {
 		if(location.getID()==0)
 			location.setID(ID);
 		locationDAO.updateLocation(ID, location);

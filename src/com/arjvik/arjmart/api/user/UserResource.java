@@ -27,7 +27,7 @@ public class UserResource {
 	}
 	
 	@POST
-	public Response addUser(User user) throws UserAlreadyFoundException, DatabaseException {
+	public Response addUser(User user) throws UserAlreadyExistsException, DatabaseException {
 		int ID = userDAO.addUser(user);
 		user.setID(ID);
 		return Response.created(UriBuilder.fromMethod(UserResource.class, "getUser").build(ID)).entity(user).build();

@@ -82,7 +82,20 @@ public class JDBCItemAttributeDAO implements ItemAttributeDAO {
 				throw new DatabaseException();
 			}
 		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new ItemNotFoundException(itemAttribute.getSKU(),e);
+			try (Connection connection = connectionFactory.getConnection()) {
+				PreparedStatement statement = connection.prepareStatement("select * from ItemAttributeMaster where SKU = ? and Color = ? and Size = ?");
+				statement.setInt(1, itemAttribute.getSKU());
+				statement.setString(2, itemAttribute.getColor());
+				statement.setString(3, itemAttribute.getSize());
+				ResultSet resultSet = statement.executeQuery();
+				if(resultSet.next()){
+					return resultSet.getInt("ItemAttributeID");
+				}else{
+					throw new ItemNotFoundException(itemAttribute.getSKU(),e);
+				}
+			} catch (SQLException e1) {
+				throw new DatabaseException(e1);
+			}
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
 		}

@@ -89,18 +89,18 @@ public class ItemResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}")
-	public Response postAddSKU(Item item, @PathParam("SKU") int SKU) throws InvalidSKUException, ItemAlreadyExistsException, DatabaseException {
+	public Response addSKU(Item item, @PathParam("SKU") int SKU) throws InvalidSKUException, ItemAlreadyExistsException, DatabaseException {
 		if(SKU==0)
 			throw new InvalidSKUException(0);
 		item.setSKU(SKU);
 		itemDAO.addItem(item);
-		return Response.created(UriBuilder.fromMethod(ItemResource.class, "postAddSKU").build(SKU)).entity(item).build();
+		return Response.created(UriBuilder.fromMethod(ItemResource.class, "getItem").build(SKU)).entity(item).build();
 	}
 
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}")
-	public Response putEditItem(Item item, @PathParam("SKU") int SKU) throws ItemNotFoundException, DatabaseException {
+	public Response editItem(Item item, @PathParam("SKU") int SKU) throws ItemNotFoundException, DatabaseException {
 		if(item.getSKU()==0)
 			item.setSKU(SKU);
 		itemDAO.updateItem(SKU, item);
@@ -133,7 +133,7 @@ public class ItemResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attributes")
-	public Response postAddAttribute(ItemAttribute itemAttribute, @PathParam("SKU") int SKU) throws ItemNotFoundException, DatabaseException  {
+	public Response addAttribute(ItemAttribute itemAttribute, @PathParam("SKU") int SKU) throws ItemNotFoundException, DatabaseException  {
 		itemAttribute.setSKU(SKU);
 		int ID = itemAttributeDAO.addItemAttribute(itemAttribute);
 		itemAttribute.setID(ID);
@@ -143,7 +143,7 @@ public class ItemResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attributes/{ID}")
-	public Response putEditAttribute(ItemAttribute itemAttribute, @PathParam("SKU") int SKU, @PathParam("ID") int ID) throws ItemAttributeNotFoundException, ItemNotFoundException, DatabaseException {
+	public Response editAttribute(ItemAttribute itemAttribute, @PathParam("SKU") int SKU, @PathParam("ID") int ID) throws ItemAttributeNotFoundException, ItemNotFoundException, DatabaseException {
 		itemAttribute.setSKU(SKU);
 		itemAttribute.setID(ID);
 		itemAttributeDAO.updateItemAttribute(SKU, ID, itemAttribute);
