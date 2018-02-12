@@ -23,6 +23,7 @@ import com.arjvik.arjmart.api.order.OrderDAO;
 import com.arjvik.arjmart.api.order.OrderLineDAO;
 import com.arjvik.arjmart.api.order.checkout.CheckoutDAO;
 import com.arjvik.arjmart.api.order.checkout.JDBCCheckoutDAO;
+import com.arjvik.arjmart.api.order.checkout.PaymentDAO;
 import com.arjvik.arjmart.api.order.checkout.DummyPaymentDAO;
 
 @Provider
@@ -42,7 +43,7 @@ public class Hk2Feature implements Feature {
         		bind(JDBCOrderDAO.class).to(OrderDAO.class).in(Singleton.class);
         		bind(JDBCOrderLineDAO.class).to(OrderLineDAO.class).in(Singleton.class);
         		bind(JDBCCheckoutDAO.class).to(CheckoutDAO.class).in(Singleton.class);
-        		bind(DummyPaymentDAO.class).to(CheckoutDAO.class).in(Singleton.class);
+        		bind(DummyPaymentDAO.class).to(PaymentDAO.class).in(Singleton.class);
         	}
         });
         return true;

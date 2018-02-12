@@ -11,7 +11,7 @@ import javax.inject.Inject;
 
 public class ConnectionFactory {
 	
-	private String DB_URL, DB_USER, DB_PASSWORD;
+	private final String DB_URL, DB_USER, DB_PASSWORD;
 	
 	@Inject
 	public ConnectionFactory() {
