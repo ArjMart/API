@@ -12,17 +12,8 @@ public class UserNotFoundException extends Exception {
 		this.ID = ID;
 	}
 
-	public UserNotFoundException(Throwable cause) {
-		super(cause);
-	}
-
 	public UserNotFoundException(int ID, Throwable cause) {
 		super(Integer.toString(ID), cause);
-		this.ID = ID;
-	}
-
-	public UserNotFoundException(int ID, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(Integer.toString(ID), cause, enableSuppression, writableStackTrace);
 		this.ID = ID;
 	}
 

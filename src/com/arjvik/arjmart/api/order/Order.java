@@ -1,7 +1,5 @@
 package com.arjvik.arjmart.api.order;
 
-import java.util.Date;
-
 public class Order {
 	private int orderID;
 	private int userID;

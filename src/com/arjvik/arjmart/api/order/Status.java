@@ -1,12 +1,12 @@
 package com.arjvik.arjmart.api.order;
 
-public class OrderStatus {
+public class Status {
 	private String status;
 
-	public OrderStatus() {
+	public Status() {
 		
 	}
-	public OrderStatus(String status) {
+	public Status(String status) {
 		this();
 		this.status = status;
 	}
@@ -35,7 +35,7 @@ public class OrderStatus {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		OrderStatus other = (OrderStatus) obj;
+		Status other = (Status) obj;
 		if (status == null) {
 			if (other.status != null)
 				return false;

@@ -2,16 +2,20 @@ package com.arjvik.arjmart.api.order;
 
 import java.util.List;
 
+import com.arjvik.arjmart.api.DatabaseException;
+
 public interface OrderLineDAO {
 
-	public List<OrderLine> getOrderLines(int orderID);
+	public List<OrderLine> getOrderLines(int orderID) throws DatabaseException;
 
-	public OrderLine getOrderLine(int orderID, int orderLineID);
+	public OrderLine getOrderLine(int orderID, int orderLineID) throws OrderLineNotFoundException, DatabaseException;
 
-	public int addOrderLine(OrderLine orderLine);
+	public int addOrderLine(OrderLine orderLine) throws OrderLineCombinationAlreadyExistsException, DatabaseException;
 
-	public int updateOrderLine(int orderID, int orderLineID, OrderLine orderLine);
+	public void updateOrderLineStatus(int orderID, int orderLineID, Status status) throws OrderLineNotFoundException, DatabaseException;
 
-	public void deleteOrderLine(int orderID, int orderLineID);
+	public void updateOrderLineQuantity(int orderID, int orderLineID, Quantity quantity) throws OrderLineNotFoundException, DatabaseException;
+
+	public void deleteOrderLine(int orderID, int orderLineID) throws OrderLineNotFoundException, DatabaseException;
 
 }

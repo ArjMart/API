@@ -5,27 +5,14 @@ public class ItemAttributeNotFoundException extends Exception {
 	private int SKU;
 	private int ID;
 	
-	public ItemAttributeNotFoundException() {
-	}
-
 	public ItemAttributeNotFoundException(int SKU, int ID) {
-		super(Integer.toString(ID));
+		super(SKU + "/" + ID);
 		this.SKU = SKU;
 		this.ID = ID;
-	}
-
-	public ItemAttributeNotFoundException(Throwable cause) {
-		super(cause);
 	}
 
 	public ItemAttributeNotFoundException(int SKU, int ID, Throwable cause) {
-		super(Integer.toString(ID), cause);
-		this.SKU = SKU;
-		this.ID = ID;
-	}
-
-	public ItemAttributeNotFoundException(int SKU, int ID, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(Integer.toString(ID), cause, enableSuppression, writableStackTrace);
+		super(SKU + "/" + ID, cause);
 		this.SKU = SKU;
 		this.ID = ID;
 	}

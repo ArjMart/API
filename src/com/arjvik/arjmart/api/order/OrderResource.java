@@ -16,6 +16,9 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.arjvik.arjmart.api.DatabaseException;
 import com.arjvik.arjmart.api.user.UserNotFoundException;
+import com.arjvik.arjmart.api.order.checkout.CheckoutDAO;
+import com.arjvik.arjmart.api.order.checkout.InvalidOrderStateException;
+import com.arjvik.arjmart.api.order.checkout.PaymentException;
 
 @Path("/orders")
 @Produces(MediaType.APPLICATION_JSON)
@@ -23,11 +26,13 @@ public class OrderResource {
 	
 	private OrderDAO orderDAO;
 	private OrderLineDAO orderLineDAO;
+	private CheckoutDAO checkoutDAO;
 	
 	@Inject
-	public OrderResource(OrderDAO orderDAO, OrderLineDAO orderLineDAO) {
+	public OrderResource(OrderDAO orderDAO, OrderLineDAO orderLineDAO, CheckoutDAO checkoutDAO) {
 		this.orderDAO = orderDAO;
 		this.orderLineDAO = orderLineDAO;
+		this.checkoutDAO = checkoutDAO;
 	}
 	
 	@GET
@@ -51,14 +56,14 @@ public class OrderResource {
 	}
 	
 	@POST
-	public Response addOrder(Order order) throws UserNotFoundException, DatabaseException {
-		order = orderDAO.addOrder(order);
+	public Response getOrAddCart(Order order) throws UserNotFoundException, DatabaseException {
+		order = orderDAO.getOrAddOrder(order);
 		return Response.created(UriBuilder.fromMethod(OrderResource.class, "getOrder").build(order.getOrderID())).entity(order).build();
 	}
 	
 	@PUT
 	@Path("{ID}")
-	public Response changeOrderStatus(OrderStatus orderStatus, @PathParam("ID") int ID) throws OrderNotFoundException, DatabaseException {
+	public Response changeOrderStatus(Status orderStatus, @PathParam("ID") int ID) throws OrderNotFoundException, DatabaseException {
 		orderDAO.updateOrderStatus(ID, orderStatus);
 		return Response.ok(orderStatus).build();
 	}
@@ -71,22 +76,22 @@ public class OrderResource {
 	}
 	
 	@GET
-	@Path("{orderID}/lines")
-	public Response getOrderLine(@PathParam("orderID") int orderID) throws DatabaseException {
+	@Path("{OrderID}/lines")
+	public Response getOrderLines(@PathParam("orderID") int orderID) throws DatabaseException {
 		List<OrderLine> lines = orderLineDAO.getOrderLines(orderID);
 		return Response.ok(lines).build();
 	}
 	
 	@GET
-	@Path("{orderID}/lines/{orderLineID}")
-	public Response getOrderLine(@PathParam("orderID") int orderID, @PathParam("orderLineID") int orderLineID) throws DatabaseException {
+	@Path("{OrderID}/lines/{OrderLineID}")
+	public Response getOrderLine(@PathParam("orderID") int orderID, @PathParam("OrderLineID") int orderLineID) throws OrderLineNotFoundException, DatabaseException {
 		OrderLine line = orderLineDAO.getOrderLine(orderID, orderLineID);
 		return Response.ok(line).build();
 	}
 	
 	@POST
-	@Path("{orderID}/lines")
-	public Response addOrderLine(OrderLine orderLine, @PathParam("OrderID") int orderID) throws DatabaseException {
+	@Path("{OrderID}/lines")
+	public Response addOrderLine(OrderLine orderLine, @PathParam("OrderID") int orderID) throws OrderLineCombinationAlreadyExistsException, DatabaseException {
 		orderLine.setOrderID(orderID);
 		int id = orderLineDAO.addOrderLine(orderLine);
 		orderLine.setOrderLineID(id);
@@ -94,18 +99,31 @@ public class OrderResource {
 	}
 	
 	@PUT
-	@Path("{orderID}/lines/{orderLineID}")
-	public Response editOrderLine(OrderLine orderLine, @PathParam("OrderID") int orderID, @PathParam("orderLineID") int orderLineID) throws DatabaseException {
-		orderLine.setOrderID(orderID);
-		int id = orderLineDAO.updateOrderLine(orderID, orderLineID, orderLine); //Only quantity and status are allowed
-		orderLine.setOrderLineID(id);
-		return Response.ok(orderLine).build();
+	@Path("{OrderID}/lines/{OrderLineID}")
+	public Response editOrderLine(Quantity quantity, @PathParam("OrderID") int orderID, @PathParam("OrderLineID") int orderLineID) throws OrderLineNotFoundException, DatabaseException {
+		orderLineDAO.updateOrderLineQuantity(orderID, orderLineID, quantity);
+		return Response.ok(quantity).build();
+	}
+	
+	@PUT
+	@Path("{OrderID}/lines/{OrderLineID}/status")
+	public Response editOrderLineStatus(Status status, @PathParam("OrderID") int orderID, @PathParam("OrderLineID") int orderLineID) throws OrderLineNotFoundException, DatabaseException {
+		orderLineDAO.updateOrderLineStatus(orderID, orderLineID, status);
+		return Response.ok(status).build();
 	}
 	
 	@DELETE
-	@Path("{orderID}/lines/{orderLineID}")
-	public Response deleteOrderLine(@PathParam("OrderID") int orderID, @PathParam("orderLineID") int orderLineID) throws DatabaseException {
+	@Path("{OrderID}/lines/{OrderLineID}")
+	public Response deleteOrderLine(@PathParam("OrderID") int orderID, @PathParam("OrderLineID") int orderLineID) throws OrderLineNotFoundException, DatabaseException {
 		orderLineDAO.deleteOrderLine(orderID, orderLineID);
+		return Response.noContent().build();
+	}
+	
+	//CHECKOUT
+	@POST
+	@Path("{OrderID}/checkout")
+	public Response checkout(@PathParam("OrderID") int orderID) throws OrderNotFoundException, InvalidOrderStateException, PaymentException, DatabaseException {
+		checkoutDAO.checkout(orderID);
 		return Response.noContent().build();
 	}
 

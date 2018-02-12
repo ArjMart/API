@@ -13,9 +13,9 @@ public interface OrderDAO {
 
 	public Order getOrder(int ID) throws OrderNotFoundException, DatabaseException;
 
-	public Order addOrder(Order order) throws UserNotFoundException, DatabaseException;
+	public Order getOrAddOrder(Order order) throws UserNotFoundException, DatabaseException;
 
-	public void updateOrderStatus(int ID, OrderStatus orderStatus) throws OrderNotFoundException, DatabaseException;
+	public void updateOrderStatus(int ID, Status orderStatus) throws OrderNotFoundException, DatabaseException;
 
 	public void deleteOrder(int ID) throws OrderNotFoundException, DatabaseException;
 

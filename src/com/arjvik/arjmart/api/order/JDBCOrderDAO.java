@@ -70,12 +70,21 @@ public class JDBCOrderDAO implements OrderDAO {
 	}
 
 	@Override
-	public Order addOrder(Order order) throws UserNotFoundException, DatabaseException {
+	public Order getOrAddOrder(Order order) throws UserNotFoundException, DatabaseException {
 		try (Connection connection = connectionFactory.getConnection()) {
-			PreparedStatement statement = connection.prepareStatement("insert into Order (UserID) values (?)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement statement = connection.prepareStatement("select * from Order where UserID = ? and OrderStatus = 'Cart' order by OrderID desc limit 1");
+			statement.setInt(1, order.getUserID());
+			ResultSet resultSet = statement.executeQuery();
+			if(resultSet.next()){
+				order.setOrderID(resultSet.getInt("OrderID"));
+				order.setStatus("Cart");
+				return order;
+			}
+			//No cart order found, creating new one
+			statement = connection.prepareStatement("insert into Order (UserID) values (?)", Statement.RETURN_GENERATED_KEYS);
 			statement.setInt(1, order.getUserID());
 			statement.executeUpdate();
-			ResultSet resultSet = statement.getGeneratedKeys();
+			resultSet = statement.getGeneratedKeys();
 			if(!resultSet.next())
 				throw new DatabaseException();
 			order.setOrderID(resultSet.getInt(0));
@@ -89,7 +98,7 @@ public class JDBCOrderDAO implements OrderDAO {
 	}
 
 	@Override
-	public void updateOrderStatus(int ID, OrderStatus orderStatus) throws OrderNotFoundException, DatabaseException{
+	public void updateOrderStatus(int ID, Status orderStatus) throws OrderNotFoundException, DatabaseException{
 		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("update Order set OrderStatus = ? where OrderID = ?");
 			statement.setString(1, orderStatus.getStatus());
@@ -112,5 +121,4 @@ public class JDBCOrderDAO implements OrderDAO {
 			throw new DatabaseException(e);
 		}
 	}
-
 }

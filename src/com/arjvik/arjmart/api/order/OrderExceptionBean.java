@@ -4,7 +4,6 @@ public class OrderExceptionBean {
 	private String error;
 	private int orderID;
 	
-	
 	public OrderExceptionBean() {
 		
 	}
