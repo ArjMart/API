@@ -77,14 +77,14 @@ public class OrderResource {
 	
 	@GET
 	@Path("{OrderID}/lines")
-	public Response getOrderLines(@PathParam("orderID") int orderID) throws DatabaseException {
+	public Response getOrderLines(@PathParam("OrderID") int orderID) throws DatabaseException {
 		List<OrderLine> lines = orderLineDAO.getOrderLines(orderID);
 		return Response.ok(lines).build();
 	}
 	
 	@GET
 	@Path("{OrderID}/lines/{OrderLineID}")
-	public Response getOrderLine(@PathParam("orderID") int orderID, @PathParam("OrderLineID") int orderLineID) throws OrderLineNotFoundException, DatabaseException {
+	public Response getOrderLine(@PathParam("OrderID") int orderID, @PathParam("OrderLineID") int orderLineID) throws OrderLineNotFoundException, DatabaseException {
 		OrderLine line = orderLineDAO.getOrderLine(orderID, orderLineID);
 		return Response.ok(line).build();
 	}
@@ -95,6 +95,7 @@ public class OrderResource {
 		orderLine.setOrderID(orderID);
 		int id = orderLineDAO.addOrderLine(orderLine);
 		orderLine.setOrderLineID(id);
+		orderLine.setStatus("Pending");
 		return Response.created(UriBuilder.fromMethod(OrderResource.class, "getOrderLine").build(orderID, id)).entity(orderLine).build();
 	}
 	

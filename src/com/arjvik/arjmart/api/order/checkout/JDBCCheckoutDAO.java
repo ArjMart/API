@@ -25,7 +25,7 @@ public class JDBCCheckoutDAO implements CheckoutDAO {
 	@Override
 	public void checkout(int orderID) throws OrderNotFoundException, InvalidOrderStateException, PaymentException, DatabaseException{
 		try (Connection connection = connectionFactory.getConnection()) {
-			PreparedStatement statement = connection.prepareStatement("select * from Order where OrderID = ?");
+			PreparedStatement statement = connection.prepareStatement("select * from arjmart.Order where OrderID = ?");
 			statement.setInt(1, orderID);
 			ResultSet resultSet = statement.executeQuery();
 			if(!resultSet.next())
@@ -49,7 +49,7 @@ public class JDBCCheckoutDAO implements CheckoutDAO {
 			
 			paymentDAO.pay(price, cc);
 			
-			statement = connection.prepareStatement("update Order set OrderStatus = 'Pending' where OrderID = ?");
+			statement = connection.prepareStatement("update arjmart.Order set OrderStatus = 'Pending' where OrderID = ?");
 			statement.setInt(1, orderID);
 			statement.executeUpdate();
 		} catch (SQLException e) {

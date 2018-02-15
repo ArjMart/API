@@ -10,6 +10,6 @@ public class OrderLineCombinationAlreadyExistsExceptionMapper implements Excepti
 
 	@Override
 	public Response toResponse(OrderLineCombinationAlreadyExistsException e) {
-		return Response.status(Status.NOT_FOUND).entity(new OrderLineCombinationAlreadyExistsExceptionBean(e.getOrderID(), e.getSKU(), e.getItemAttributeID(), "order line combination already exists")).build();
+		return Response.status(Status.CONFLICT).entity(new OrderLineCombinationAlreadyExistsExceptionBean(e.getOrderID(), e.getSKU(), e.getItemAttributeID(), "order line combination already exists")).build();
 	}
 }

@@ -10,7 +10,7 @@ public class PaymentExceptionMapper implements ExceptionMapper<PaymentException>
 
 	@Override
 	public Response toResponse(PaymentException e) {
-		return Response.status(Status.NOT_FOUND).entity(new PaymentExceptionBean(e.getPrice(), e.getCreditCard(), "invalid order state - must be 'Cart' for checkout")).build();
+		return Response.status(Status.PAYMENT_REQUIRED).entity(new PaymentExceptionBean(e.getPrice(), e.getCreditCard(), "payment error")).build();
 	}
 
 }

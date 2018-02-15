@@ -25,7 +25,8 @@ public class JDBCOrderLineDAO implements OrderLineDAO {
 	@Override
 	public List<OrderLine> getOrderLines(int orderID) throws DatabaseException {
 		try (Connection connection = connectionFactory.getConnection()) {
-			PreparedStatement statement = connection.prepareStatement("select * from OrderLine");
+			PreparedStatement statement = connection.prepareStatement("select * from OrderLine where OrderID = ?");
+			statement.setInt(1, orderID);
 			ResultSet resultSet = statement.executeQuery();
 			List<OrderLine> orders = new ArrayList<>();
 			while(resultSet.next()){
@@ -63,12 +64,11 @@ public class JDBCOrderLineDAO implements OrderLineDAO {
 	@Override
 	public int addOrderLine(OrderLine orderLine) throws OrderLineCombinationAlreadyExistsException, DatabaseException {
 		try (Connection connection = connectionFactory.getConnection()) {
-			PreparedStatement statement = connection.prepareStatement("insert into OrderLine (OrderID, SKU, ItemAttributeID, Quantity, Status) from OrderLine values (?, ?, ?, ?, ?)");
+			PreparedStatement statement = connection.prepareStatement("insert into OrderLine (OrderID, SKU, ItemAttributeID, Quantity) values (?, ?, ?, ?)");
 			statement.setInt(1, orderLine.getOrderID());
 			statement.setInt(2, orderLine.getSKU());
 			statement.setInt(3, orderLine.getItemAttributeID());
 			statement.setInt(4, orderLine.getQuantity());
-			statement.setString(5, orderLine.getStatus());
 			statement.executeUpdate();
 			statement = connection.prepareStatement("select OrderLineID from OrderLine where OrderID = ? and SKU = ? and ItemAttributeID = ?");
 			statement.setInt(1, orderLine.getOrderID());
