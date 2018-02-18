@@ -1,2 +1,2 @@
-langauge: java
-script: curl https://requestb.in/1b5u0sx1
+language: java
+script: true
