@@ -1,5 +1,2 @@
 langauge: java
-install: curl https://requestb.in/1b5u0sx1
-build: true
-script: true
-deploy: true
+script: curl https://requestb.in/1b5u0sx1
