@@ -8,17 +8,16 @@ public class User {
 	private int ID;
 	private String email;
 	private String password;
-	private List<String> roles;
+	private boolean admin;
 	
 	public User() {
-		roles = new ArrayList<>();
 	}
-	public User(int ID, String email, String password, List<String> roles) {
+	public User(int ID, String email, String password, boolean admin) {
 		this();
 		this.ID = ID;
 		this.email = email;
 		this.password = password;
-		this.roles.addAll(roles);
+		this.admin = admin;
 	}
 	public int getID() {
 		return ID;
@@ -38,27 +37,25 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	public List<String> getRoles() {
-		return Collections.unmodifiableList(roles);
+	public boolean isAdmin() {
+		return admin;
 	}
-	public void setRoles(List<String> roles) {
-		this.roles = new ArrayList<>(roles);
-	}
-	public void addRole(String role){
-		roles.add(role);
+	public void setAdmin(boolean admin) {
+		this.admin = admin;
 	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ID;
+		result = prime * result + (admin ? 1231 : 1237);
 		result = prime * result + ((email == null) ? 0 : email.hashCode());
 		result = prime * result + ((password == null) ? 0 : password.hashCode());
 		return result;
 	}
 	@Override
 	public String toString() {
-		return "Item [ID=" + ID + ", email=" + email + ", password=" + password + ", roles=" + roles + "]";
+		return "User [ID=" + ID + ", email=" + email + ", password=" + password + ", admin=" + admin + "]";
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -71,6 +68,8 @@ public class User {
 		User other = (User) obj;
 		if (ID != other.ID)
 			return false;
+		if (admin != other.admin)
+			return false;
 		if (email == null) {
 			if (other.email != null)
 				return false;
@@ -81,11 +80,7 @@ public class User {
 				return false;
 		} else if (!password.equals(other.password))
 			return false;
-		if (roles == null) {
-			if (other.roles != null)
-				return false;
-		} else if (!roles.equals(other.roles))
-			return false;
 		return true;
 	}
+	
 }
