@@ -6,6 +6,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 @Provider
+@SuppressWarnings("unused")
 public class UserNotFoundExceptionMapper implements ExceptionMapper<UserNotFoundException> {
 
 	@Override
@@ -19,11 +20,9 @@ public class UserNotFoundExceptionMapper implements ExceptionMapper<UserNotFound
 				this.error = error;
 				return this;
 			}
-			@SuppressWarnings("unused")
 			public String getError() {
 				return error;
 			}
-			@SuppressWarnings("unused")
 			public int getUserID() {
 				return userID;
 			}

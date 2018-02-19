@@ -6,6 +6,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 @Provider
+@SuppressWarnings("unused")
 public class UserAlreadyExistsExceptionMapper implements ExceptionMapper<UserAlreadyExistsException> {
 
 	@Override
@@ -19,11 +20,9 @@ public class UserAlreadyExistsExceptionMapper implements ExceptionMapper<UserAlr
 				this.error = error;
 				return this;
 			}
-			@SuppressWarnings("unused")
 			public String getError() {
 				return error;
 			}
-			@SuppressWarnings("unused")
 			public String getEmail() {
 				return email;
 			}

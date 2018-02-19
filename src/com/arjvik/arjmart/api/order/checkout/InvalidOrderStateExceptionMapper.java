@@ -6,11 +6,32 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 @Provider
+@SuppressWarnings("unused")
 public class InvalidOrderStateExceptionMapper implements ExceptionMapper<InvalidOrderStateException> {
 
 	@Override
 	public Response toResponse(InvalidOrderStateException e) {
-		return Response.status(Status.NOT_FOUND).entity(new InvalidOrderStateExceptionBean(e.getID(), e.getStatus(), "invalid order state - must be 'Cart' for checkout")).build();
+		return Response.status(Status.NOT_FOUND).entity(new Object(){
+			private String error;
+			private int orderID;
+			private String status;
+
+			public Object initialize(int orderID, String status, String error) {
+				this.orderID = orderID;
+				this.status = status;
+				this.error = error;
+				return this;
+			}
+			public String getError() {
+				return error;
+			}
+			public int getOrderID() {
+				return orderID;
+			}
+			public String getStatus() {
+				return status;
+			}
+		}.initialize(e.getID(), e.getStatus(), "invalid order state - must be 'Cart' for checkout")).build();
 	}
 
 }
