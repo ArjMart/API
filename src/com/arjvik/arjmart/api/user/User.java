@@ -1,22 +1,20 @@
 package com.arjvik.arjmart.api.user;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 public class User {
 	private int ID;
 	private String email;
 	private String password;
+	private String creditCardNumber;
 	private boolean admin;
 	
 	public User() {
 	}
-	public User(int ID, String email, String password, boolean admin) {
+	public User(int ID, String email, String password, String creditCardNumber, boolean admin) {
 		this();
 		this.ID = ID;
 		this.email = email;
 		this.password = password;
+		this.creditCardNumber = creditCardNumber;
 		this.admin = admin;
 	}
 	public int getID() {
@@ -37,6 +35,12 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	public String getCreditCardNumber() {
+		return creditCardNumber;
+	}
+	public void setCreditCardNumber(String creditCardNumber) {
+		this.creditCardNumber = creditCardNumber;
+	}
 	public boolean isAdmin() {
 		return admin;
 	}
@@ -51,11 +55,12 @@ public class User {
 		result = prime * result + (admin ? 1231 : 1237);
 		result = prime * result + ((email == null) ? 0 : email.hashCode());
 		result = prime * result + ((password == null) ? 0 : password.hashCode());
+		result = prime * result + ((creditCardNumber == null) ? 0 : creditCardNumber.hashCode());
 		return result;
 	}
 	@Override
 	public String toString() {
-		return "User [ID=" + ID + ", email=" + email + ", password=" + password + ", admin=" + admin + "]";
+		return "User [ID=" + ID + ", email=" + email + ", password=" + password + ", creditCardNumber=" + creditCardNumber + ", admin=" + admin + "]";
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -79,6 +84,11 @@ public class User {
 			if (other.password != null)
 				return false;
 		} else if (!password.equals(other.password))
+			return false;
+		if (creditCardNumber == null) {
+			if (other.creditCardNumber != null)
+				return false;
+		} else if (!creditCardNumber.equals(other.creditCardNumber))
 			return false;
 		return true;
 	}

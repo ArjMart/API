@@ -8,8 +8,10 @@ public interface UserDAO {
 
 	public int addUser(User user) throws UserAlreadyExistsException, DatabaseException;
 
-	public void editUserCreditCardNumber(int ID, User user)  throws UserAlreadyExistsException, DatabaseException;
+	public void editUserCreditCardNumber(int ID, User user) throws UserNotFoundException, DatabaseException;
 
 	public boolean authenticate(User user) throws DatabaseException;
+	
+	public void deleteUser(int ID) throws UserNotFoundException, DatabaseException;
 
 }

@@ -10,7 +10,24 @@ public class UserNotFoundExceptionMapper implements ExceptionMapper<UserNotFound
 
 	@Override
 	public Response toResponse(UserNotFoundException e) {
-		return Response.status(Status.NOT_FOUND).entity(new UserExceptionBean(e.getID(),"user not found")).build();
+		return Response.status(Status.NOT_FOUND).entity(new Object(){
+			private String error;
+			private int userID;
+			
+			public Object initialize(int userID, String error) {
+				this.userID = userID;
+				this.error = error;
+				return this;
+			}
+			@SuppressWarnings("unused")
+			public String getError() {
+				return error;
+			}
+			@SuppressWarnings("unused")
+			public int getUserID() {
+				return userID;
+			}
+		}.initialize(e.getID(), "user not found")).build();
 	}
 
 }
