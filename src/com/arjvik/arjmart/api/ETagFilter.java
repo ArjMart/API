@@ -1,10 +1,9 @@
 package com.arjvik.arjmart.api;
 
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -20,6 +19,19 @@ import javax.ws.rs.ext.Provider;
 @Priority(Priorities.HEADER_DECORATOR)
 public class ETagFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
+	private final CacheControl cc = new CacheControl(){{
+		setMaxAge(3600);
+		setPrivate(true);
+		setNoStore(true);
+	}};
+	
+	ETagProvider etagProvider;
+	
+	@Inject
+	public ETagFilter(ETagProvider etagProvider){
+		this.etagProvider = etagProvider;
+	}
+	
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		if(requestContext.getHeaders().containsKey(HttpHeaders.IF_NONE_MATCH)){
@@ -31,7 +43,7 @@ public class ETagFilter implements ContainerRequestFilter, ContainerResponseFilt
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
 		if(requestContext.getMethod()!="GET" || responseContext.getStatus()!=200)
 			return;
-		String ETag = generateETag(responseContext.getEntity());
+		String ETag = etagProvider.generateETag(responseContext.getEntity());
 		if(ETag==null)
 			return;
 		if(requestContext.getPropertyNames().contains("If-None-Match")){
@@ -45,40 +57,7 @@ public class ETagFilter implements ContainerRequestFilter, ContainerResponseFilt
 			}
 		}
 		responseContext.getHeaders().putSingle(HttpHeaders.ETAG, "\""+ETag+"\"");
-		CacheControl cc = new CacheControl();
-		cc.setMaxAge(300);
-		cc.setPrivate(true);
-		cc.setNoStore(true);
 		responseContext.getHeaders().putSingle(HttpHeaders.CACHE_CONTROL, cc.toString());
 	}
-	
-	private static String generateETag(Object obj){
-		if(obj==null)
-			return null;
-		if(obj instanceof String){
-			try {
-				MessageDigest md = MessageDigest.getInstance("SHA-256");
-				String entity = (String) obj;
-				byte[] etagBytes = md.digest(entity.getBytes());
-				return toHexString(etagBytes);
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-				return null;
-			}
-		}else{
-			return null;
-		}
-	}
-	
-	private static String toHexString(final byte[] data) {
-        final int l = data.length;
-        final char[] toDigits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-        final char[] out = new char[l << 1];
-        // two characters form the hex value.
-        for (int i = 0, j = 0; i < l; i++) {
-            out[j++] = toDigits[(0xF0 & data[i]) >>> 4];
-            out[j++] = toDigits[0x0F & data[i]];
-        }
-        return new String(out);
-    }
+
 }
