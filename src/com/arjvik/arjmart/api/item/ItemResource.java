@@ -47,7 +47,6 @@ public class ItemResource {
 			limit = MAX_RECORDS;
 		}
 		List<Item> items = itemDAO.getAllItems(start,limit);
-		System.err.println(items);
 		ResponseBuilder response = Response.ok(items);
 		if(start>0){
 			int newStart = Math.max(0, start-limit);
