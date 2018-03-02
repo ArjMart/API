@@ -32,10 +32,10 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		Authorized authorized = info.getResourceMethod().getAnnotation(Authorized.class);
 		try {
-			int userID = authenticationDAO.authenticate();
+			int userID = authenticationDAO.authenticate(requestContext.getHeaderString("Authorization"));
 			requestContext.setProperty("userID", userID);
 			if(!authorized.value().equals(Authorized.NO_ROLE)){
-				authenticationDAO.authorize(authorized.value());
+				authenticationDAO.authorize(userID, authorized.value());
 			}
 		} catch (AuthenticationFailedException e) {
 			requestContext.abortWith(Response.status(Status.UNAUTHORIZED).header("WWW-Autheticate","BASIC").build());
