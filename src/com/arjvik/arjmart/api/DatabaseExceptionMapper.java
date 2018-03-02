@@ -8,8 +8,8 @@ import javax.ws.rs.ext.Provider;
 public class DatabaseExceptionMapper implements ExceptionMapper<DatabaseException> {
 
 	@Override
-	public Response toResponse(DatabaseException exception) {
-		exception.printStackTrace();
+	public Response toResponse(DatabaseException e) {
+		e.printStackTrace();
 		return Response.serverError().build();
 	}
 

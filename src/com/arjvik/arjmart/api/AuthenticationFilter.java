@@ -9,6 +9,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
@@ -21,7 +22,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 	@Context
 	ResourceInfo info;
 	
-	AuthenticationDAO authenticationDAO;
+	private AuthenticationDAO authenticationDAO;
 	
 	@Inject
 	public AuthenticationFilter(AuthenticationDAO authenticationDAO) {
@@ -32,16 +33,17 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		Authorized authorized = info.getResourceMethod().getAnnotation(Authorized.class);
 		try {
-			int userID = authenticationDAO.authenticate(requestContext.getHeaderString("Authorization"));
+			int userID = authenticationDAO.authenticate(requestContext.getHeaderString(HttpHeaders.AUTHORIZATION));
 			requestContext.setProperty("userID", userID);
 			if(!authorized.value().equals(Authorized.NO_ROLE)){
 				authenticationDAO.authorize(userID, authorized.value());
 			}
 		} catch (AuthenticationFailedException e) {
-			requestContext.abortWith(Response.status(Status.UNAUTHORIZED).header("WWW-Autheticate","BASIC").build());
+			requestContext.abortWith(Response.status(Status.UNAUTHORIZED).header(HttpHeaders.WWW_AUTHENTICATE,"Basic realm=\"ArjMart\"").build());
 		} catch (AuthorizationFailedException e) {
 			requestContext.abortWith(Response.status(Status.FORBIDDEN).build());
+		} catch (DatabaseException e) {
+			requestContext.abortWith(new DatabaseExceptionMapper().toResponse(e));
 		}
-		
 	}
 }

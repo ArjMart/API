@@ -2,8 +2,8 @@ package com.arjvik.arjmart.api;
 
 public interface AuthenticationDAO {
 
-	int authenticate(String credentials) throws AuthenticationFailedException;
+	int authenticate(String credentials) throws AuthenticationFailedException, DatabaseException;
 
-	void authorize(int userID, String role) throws AuthorizationFailedException;
+	void authorize(int userID, String role) throws AuthorizationFailedException, DatabaseException;
 
 }

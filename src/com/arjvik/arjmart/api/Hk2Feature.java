@@ -46,6 +46,7 @@ public class Hk2Feature implements Feature {
         		bind(JDBCOrderLineDAO.class).to(OrderLineDAO.class).in(Singleton.class);
         		bind(JDBCCheckoutDAO.class).to(CheckoutDAO.class).in(Singleton.class);
         		bind(JDBCUserDAO.class).to(UserDAO.class).in(Singleton.class);
+        		bind(JDBCAuthenticationDAO.class).to(AuthenticationDAO.class).in(Singleton.class);
         		bind(DummyPaymentDAO.class).to(PaymentDAO.class).in(Singleton.class);
         		bind(HashCodeETagProvider.class).to(ETagProvider.class).in(Singleton.class);
         	}

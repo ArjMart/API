@@ -1,5 +1,14 @@
 package com.arjvik.arjmart.api;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.inject.Inject;
+
+import org.glassfish.jersey.internal.util.Base64;
+
 public class JDBCAuthenticationDAO implements AuthenticationDAO {
 	
 	private ConnectionFactory connectionFactory;
@@ -11,6 +20,12 @@ public class JDBCAuthenticationDAO implements AuthenticationDAO {
 
 	@Override
 	public int authenticate(String credentials) throws AuthenticationFailedException, DatabaseException {
+		if(credentials == null)
+			throw new AuthenticationFailedException();
+		String decoded = Base64.decodeAsString(credentials.substring(6));
+		String[] credentialArray = decoded.split(":");
+		String email = credentialArray[0];
+		String password = credentialArray[1];
 		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("select UserID from User where Email = ? and Password = ?");
 			statement.setString(1, email);
