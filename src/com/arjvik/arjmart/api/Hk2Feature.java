@@ -6,6 +6,7 @@ import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.Provider;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.process.internal.RequestScoped;
 
 import com.arjvik.arjmart.api.item.ItemAttributeDAO;
 import com.arjvik.arjmart.api.item.ItemDAO;
@@ -49,6 +50,7 @@ public class Hk2Feature implements Feature {
         		bind(JDBCAuthenticationDAO.class).to(AuthenticationDAO.class).in(Singleton.class);
         		bind(DummyPaymentDAO.class).to(PaymentDAO.class).in(Singleton.class);
         		bind(HashCodeETagProvider.class).to(ETagProvider.class).in(Singleton.class);
+        		bindFactory(UserIDProvider.class).to(Integer.class).named("userID").in(RequestScoped.class);
         	}
         });
         return true;

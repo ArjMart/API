@@ -43,8 +43,16 @@ public class JDBCAuthenticationDAO implements AuthenticationDAO {
 
 	@Override
 	public void authorize(int userID, String role) throws AuthorizationFailedException, DatabaseException {
-		// TODO Auto-generated method stub
-
+		try (Connection connection = connectionFactory.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement("select * from UserRoles where UserID = ? and Role = ?");
+			statement.setInt(1, userID);
+			statement.setString(2, role);
+			ResultSet resultSet = statement.executeQuery();
+			if(!resultSet.next())
+				throw new AuthorizationFailedException();
+		}catch (SQLException e) {
+			throw new DatabaseException(e);
+		}
 	}
 
 }
