@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.auth;
 
 import java.io.IOException;
 
@@ -13,6 +13,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
+
+import com.arjvik.arjmart.api.DatabaseException;
+import com.arjvik.arjmart.api.DatabaseExceptionMapper;
 
 @Provider
 @Authorized

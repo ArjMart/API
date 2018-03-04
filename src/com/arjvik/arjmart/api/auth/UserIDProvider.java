@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.auth;
 
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;

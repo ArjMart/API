@@ -8,6 +8,10 @@ import javax.ws.rs.ext.Provider;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
 
+import com.arjvik.arjmart.api.auth.AuthenticationDAO;
+import com.arjvik.arjmart.api.auth.JDBCAuthenticationDAO;
+import com.arjvik.arjmart.api.auth.UserID;
+import com.arjvik.arjmart.api.auth.UserIDProvider;
 import com.arjvik.arjmart.api.item.ItemAttributeDAO;
 import com.arjvik.arjmart.api.item.ItemDAO;
 import com.arjvik.arjmart.api.item.ItemPriceDAO;
@@ -23,11 +27,11 @@ import com.arjvik.arjmart.api.order.JDBCOrderLineDAO;
 import com.arjvik.arjmart.api.order.OrderDAO;
 import com.arjvik.arjmart.api.order.OrderLineDAO;
 import com.arjvik.arjmart.api.order.checkout.CheckoutDAO;
+import com.arjvik.arjmart.api.order.checkout.DummyPaymentDAO;
 import com.arjvik.arjmart.api.order.checkout.JDBCCheckoutDAO;
 import com.arjvik.arjmart.api.order.checkout.PaymentDAO;
 import com.arjvik.arjmart.api.user.JDBCUserDAO;
 import com.arjvik.arjmart.api.user.UserDAO;
-import com.arjvik.arjmart.api.order.checkout.DummyPaymentDAO;
 
 @Provider
 public class Hk2Feature implements Feature {
@@ -35,7 +39,7 @@ public class Hk2Feature implements Feature {
     @Override
     public boolean configure(FeatureContext context) {
         context.register(new AbstractBinder() {
-        	@Override
+			@Override
         	protected void configure() {
         		bind(ConnectionFactory.class).to(ConnectionFactory.class).in(Singleton.class);
         		bind(JDBCItemDAO.class).to(ItemDAO.class).in(Singleton.class);
@@ -50,7 +54,7 @@ public class Hk2Feature implements Feature {
         		bind(JDBCAuthenticationDAO.class).to(AuthenticationDAO.class).in(Singleton.class);
         		bind(DummyPaymentDAO.class).to(PaymentDAO.class).in(Singleton.class);
         		bind(HashCodeETagProvider.class).to(ETagProvider.class).in(Singleton.class);
-        		bindFactory(UserIDProvider.class).to(Integer.class).named("userID").in(RequestScoped.class);
+        		bindFactory(UserIDProvider.class).to(Integer.class).qualifiedBy(new UserID.Instance()).in(RequestScoped.class);
         	}
         });
         return true;

@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.auth;
 
 public class AuthorizationFailedException extends Exception {
 

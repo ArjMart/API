@@ -1,4 +1,4 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.auth;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,6 +8,9 @@ import java.sql.SQLException;
 import javax.inject.Inject;
 
 import org.glassfish.jersey.internal.util.Base64;
+
+import com.arjvik.arjmart.api.ConnectionFactory;
+import com.arjvik.arjmart.api.DatabaseException;
 
 public class JDBCAuthenticationDAO implements AuthenticationDAO {
 	
@@ -44,7 +47,7 @@ public class JDBCAuthenticationDAO implements AuthenticationDAO {
 	@Override
 	public void authorize(int userID, String role) throws AuthorizationFailedException, DatabaseException {
 		try (Connection connection = connectionFactory.getConnection()) {
-			PreparedStatement statement = connection.prepareStatement("select * from UserRoles where UserID = ? and Role = ?");
+			PreparedStatement statement = connection.prepareStatement("select * from UserRoles where UserID = ? and (Role = ? or Role = 'SuperAdmin')");
 			statement.setInt(1, userID);
 			statement.setString(2, role);
 			ResultSet resultSet = statement.executeQuery();

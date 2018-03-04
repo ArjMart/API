@@ -1,4 +1,6 @@
-package com.arjvik.arjmart.api;
+package com.arjvik.arjmart.api.auth;
+
+import com.arjvik.arjmart.api.DatabaseException;
 
 public interface AuthenticationDAO {
 
