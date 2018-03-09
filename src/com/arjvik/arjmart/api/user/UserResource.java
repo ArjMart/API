@@ -34,7 +34,7 @@ public class UserResource {
 	
 	@GET
 	@Authorized
-	public Response getUser(@Context @InjectUserID Integer userID) {
+	public Response getUserID(@Context @InjectUserID Integer userID) {
 		return Response.ok(new UserID(userID)).build();
 	}
 	

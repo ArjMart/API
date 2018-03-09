@@ -7,6 +7,7 @@ public class UserID {
 	}
 	public UserID(int ID) {
 		this();
+		this.ID = ID;
 	}
 	public int getID() {
 		return ID;
