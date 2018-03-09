@@ -24,12 +24,10 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
 @Priority(Priorities.ENTITY_CODER)
 public class PrettyPrintEnvelopeFilter implements ContainerResponseFilter {
 	
-	@Context
-	private UriInfo uriInfo;
-	
 	@Override
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
 		Object entity = responseContext.getEntity();
+		UriInfo uriInfo = requestContext.getUriInfo();
 		MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
 		if(queryParams.containsKey("callback") || queryParams.containsKey("envelope")){
 			entity = getEnvelope(responseContext.getStatus(), responseContext.getStringHeaders(), entity);
@@ -39,7 +37,7 @@ public class PrettyPrintEnvelopeFilter implements ContainerResponseFilter {
 			}
 			responseContext.setEntity(entity);
 		}
-		if(uriInfo.getQueryParameters().containsKey("pretty")){
+		if(queryParams.containsKey("pretty")){
 			ObjectWriterInjector.set(new ObjectWriterModifier() {
 				@Override
 				public ObjectWriter modify(EndpointConfigBase<?> ecb, MultivaluedMap<String, Object> m, Object o, ObjectWriter ow, JsonGenerator jg) throws IOException {

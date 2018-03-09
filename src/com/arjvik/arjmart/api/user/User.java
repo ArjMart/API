@@ -5,17 +5,15 @@ public class User {
 	private String email;
 	private String password;
 	private String creditCardNumber;
-	private boolean admin;
 	
 	public User() {
 	}
-	public User(int ID, String email, String password, String creditCardNumber, boolean admin) {
+	public User(int ID, String email, String password, String creditCardNumber) {
 		this();
 		this.ID = ID;
 		this.email = email;
 		this.password = password;
 		this.creditCardNumber = creditCardNumber;
-		this.admin = admin;
 	}
 	public int getID() {
 		return ID;
@@ -41,18 +39,11 @@ public class User {
 	public void setCreditCardNumber(String creditCardNumber) {
 		this.creditCardNumber = creditCardNumber;
 	}
-	public boolean isAdmin() {
-		return admin;
-	}
-	public void setAdmin(boolean admin) {
-		this.admin = admin;
-	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ID;
-		result = prime * result + (admin ? 1231 : 1237);
 		result = prime * result + ((email == null) ? 0 : email.hashCode());
 		result = prime * result + ((password == null) ? 0 : password.hashCode());
 		result = prime * result + ((creditCardNumber == null) ? 0 : creditCardNumber.hashCode());
@@ -60,7 +51,7 @@ public class User {
 	}
 	@Override
 	public String toString() {
-		return "User [ID=" + ID + ", email=" + email + ", password=" + password + ", creditCardNumber=" + creditCardNumber + ", admin=" + admin + "]";
+		return "User [ID=" + ID + ", email=" + email + ", password=" + password + ", creditCardNumber=" + creditCardNumber + "]";
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -72,8 +63,6 @@ public class User {
 			return false;
 		User other = (User) obj;
 		if (ID != other.ID)
-			return false;
-		if (admin != other.admin)
 			return false;
 		if (email == null) {
 			if (other.email != null)

@@ -9,8 +9,10 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
 
 import com.arjvik.arjmart.api.auth.AuthenticationDAO;
+import com.arjvik.arjmart.api.auth.InjectPrivileged;
 import com.arjvik.arjmart.api.auth.JDBCAuthenticationDAO;
-import com.arjvik.arjmart.api.auth.UserID;
+import com.arjvik.arjmart.api.auth.PrivilegedProvider;
+import com.arjvik.arjmart.api.auth.InjectUserID;
 import com.arjvik.arjmart.api.auth.UserIDProvider;
 import com.arjvik.arjmart.api.item.ItemAttributeDAO;
 import com.arjvik.arjmart.api.item.ItemDAO;
@@ -54,7 +56,8 @@ public class Hk2Feature implements Feature {
         		bind(JDBCAuthenticationDAO.class).to(AuthenticationDAO.class).in(Singleton.class);
         		bind(DummyPaymentDAO.class).to(PaymentDAO.class).in(Singleton.class);
         		bind(HashCodeETagProvider.class).to(ETagProvider.class).in(Singleton.class);
-        		bindFactory(UserIDProvider.class).to(Integer.class).qualifiedBy(new UserID.Instance()).in(RequestScoped.class);
+        		bindFactory(UserIDProvider.class).to(Integer.class).qualifiedBy(new InjectUserID.Instance()).in(RequestScoped.class);
+        		bindFactory(PrivilegedProvider.class).to(Boolean.class).qualifiedBy(new InjectPrivileged.Instance()).in(RequestScoped.class);
         	}
         });
         return true;

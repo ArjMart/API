@@ -38,13 +38,22 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 		try {
 			int userID = authenticationDAO.authenticate(requestContext.getHeaderString(HttpHeaders.AUTHORIZATION));
 			requestContext.setProperty("userID", userID);
-			if(!authorized.value().equals(Authorized.NO_ROLE)){
+			if(!authorized.value().equals(Role.NO_ROLE)){
 				authenticationDAO.authorize(userID, authorized.value());
+			}
+			Privileged privileged = info.getResourceMethod().getAnnotation(Privileged.class);
+			if(privileged != null) {
+				try{
+					authenticationDAO.authorize(userID, privileged.value());
+					requestContext.setProperty("isPrivileged", true);
+				} catch (AuthorizationFailedException e){
+					requestContext.setProperty("isPrivileged", false);
+				}
 			}
 		} catch (AuthenticationFailedException e) {
 			requestContext.abortWith(Response.status(Status.UNAUTHORIZED).header(HttpHeaders.WWW_AUTHENTICATE,"Basic realm=\"ArjMart\"").build());
 		} catch (AuthorizationFailedException e) {
-			requestContext.abortWith(Response.status(Status.FORBIDDEN).build());
+			requestContext.abortWith(new AuthorizationFailedExceptionMapper().toResponse(e));
 		} catch (DatabaseException e) {
 			requestContext.abortWith(new DatabaseExceptionMapper().toResponse(e));
 		}

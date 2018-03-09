@@ -19,8 +19,10 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
 
 import com.arjvik.arjmart.api.DatabaseException;
+import com.arjvik.arjmart.api.auth.Authorized;
+import com.arjvik.arjmart.api.auth.Role;
 
-@Path("/items")
+@Path("items")
 @Produces(MediaType.APPLICATION_JSON)
 public class ItemResource {
 	
@@ -88,6 +90,7 @@ public class ItemResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}")
+	@Authorized(Role.ITEM_MANAGER)
 	public Response addSKU(Item item, @PathParam("SKU") int SKU) throws InvalidSKUException, ItemAlreadyExistsException, DatabaseException {
 		if(SKU==0)
 			throw new InvalidSKUException(0);
@@ -99,6 +102,7 @@ public class ItemResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}")
+	@Authorized(Role.ITEM_MANAGER)
 	public Response editItem(Item item, @PathParam("SKU") int SKU) throws ItemNotFoundException, DatabaseException {
 		if(item.getSKU()==0)
 			item.setSKU(SKU);
@@ -108,6 +112,7 @@ public class ItemResource {
 	
 	@DELETE
 	@Path("{SKU}")
+	@Authorized(Role.ITEM_MANAGER)
 	public Response deleteItem(@PathParam("SKU") int SKU) throws ItemNotFoundException, DatabaseException {
 		itemDAO.deleteItem(SKU);
 		return Response.noContent().build();
@@ -132,6 +137,7 @@ public class ItemResource {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attributes")
+	@Authorized(Role.ITEM_MANAGER)
 	public Response addAttribute(ItemAttribute itemAttribute, @PathParam("SKU") int SKU) throws ItemNotFoundException, DatabaseException  {
 		itemAttribute.setSKU(SKU);
 		int ID = itemAttributeDAO.addItemAttribute(itemAttribute);
@@ -142,6 +148,7 @@ public class ItemResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{SKU}/attributes/{ID}")
+	@Authorized(Role.ITEM_MANAGER)
 	public Response editAttribute(ItemAttribute itemAttribute, @PathParam("SKU") int SKU, @PathParam("ID") int ID) throws ItemAttributeNotFoundException, ItemNotFoundException, DatabaseException {
 		itemAttribute.setSKU(SKU);
 		itemAttribute.setID(ID);
@@ -151,6 +158,7 @@ public class ItemResource {
 	
 	@DELETE
 	@Path("{SKU}/attributes/{ID}")
+	@Authorized(Role.ITEM_MANAGER)
 	public Response deleteAttribute(@PathParam("SKU") int SKU, @PathParam("ID") int ID) throws ItemAttributeNotFoundException, DatabaseException {
 		itemAttributeDAO.deleteItemAttribute(SKU,ID);
 		return Response.noContent().build();
@@ -167,6 +175,7 @@ public class ItemResource {
 	
 	@PUT
 	@Path("{SKU}/attributes/{ID}/price")
+	@Authorized(Role.PRICE_MANAGER)
 	public Response setPrice(ItemPrice itemPrice, @PathParam("SKU") int SKU, @PathParam("ID") int ItemAttributeID) throws ItemAttributeNotFoundException, DatabaseException {
 		itemPriceDAO.setItemPrice(SKU, ItemAttributeID, itemPrice);
 		return Response.ok(itemPrice).build();

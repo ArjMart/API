@@ -16,6 +16,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.arjvik.arjmart.api.DatabaseException;
+import com.arjvik.arjmart.api.auth.Authorized;
+import com.arjvik.arjmart.api.auth.Role;
 import com.arjvik.arjmart.api.item.ItemAttributeNotFoundException;
 
 @Path("/locations")
@@ -46,6 +48,7 @@ public class LocationResource {
 	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
+	@Authorized(Role.INVENTORY_MANAGER)
 	public Response addLocation(Location location) throws DatabaseException{
 		int ID = locationDAO.addLocation(location);
 		location.setID(ID);
@@ -55,6 +58,7 @@ public class LocationResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{ID}")
+	@Authorized(Role.INVENTORY_MANAGER)
 	public Response editLocation(Location location, @PathParam("ID") int ID) throws LocationNotFoundException, DatabaseException {
 		if(location.getID()==0)
 			location.setID(ID);
@@ -64,6 +68,7 @@ public class LocationResource {
 	
 	@DELETE
 	@Path("{ID}")
+	@Authorized(Role.INVENTORY_MANAGER)
 	public Response deleteLocation(@PathParam("ID") int ID) throws LocationNotFoundException, DatabaseException {
 		locationDAO.deleteLocation(ID);
 		return Response.noContent().build();
@@ -91,6 +96,7 @@ public class LocationResource {
 	
 	@PUT
 	@Path("{ID}/inventory/{SKU}/{itemAttributeID}")
+	@Authorized(Role.INVENTORY_MANAGER)
 	public Response setInventory(Inventory inventory, @PathParam("SKU") int SKU, @PathParam("ID") int ID, @PathParam("itemAttributeID") int itemAttributeID) throws LocationNotFoundException, ItemAttributeNotFoundException, DatabaseException {
 		inventory.setLocationID(ID);
 		inventory.setSKU(SKU);

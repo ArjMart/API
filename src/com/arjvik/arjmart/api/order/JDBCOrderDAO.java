@@ -70,10 +70,12 @@ public class JDBCOrderDAO implements OrderDAO {
 	}
 
 	@Override
-	public Order getOrAddOrder(Order order) throws UserNotFoundException, DatabaseException {
+	public Order getOrAddOrder(int userID) throws UserNotFoundException, DatabaseException {
 		try (Connection connection = connectionFactory.getConnection()) {
+			Order order = new Order();
+			order.setUserID(userID);
 			PreparedStatement statement = connection.prepareStatement("select * from arjmart.Order where UserID = ? and OrderStatus = 'Cart' order by OrderID desc limit 1");
-			statement.setInt(1, order.getUserID());
+			statement.setInt(1, userID);
 			ResultSet resultSet = statement.executeQuery();
 			if(resultSet.next()){
 				order.setOrderID(resultSet.getInt("OrderID"));
@@ -82,7 +84,7 @@ public class JDBCOrderDAO implements OrderDAO {
 			}
 			//No cart order found, creating new one
 			statement = connection.prepareStatement("insert into arjmart.Order (UserID) values (?)", Statement.RETURN_GENERATED_KEYS);
-			statement.setInt(1, order.getUserID());
+			statement.setInt(1, userID);
 			statement.executeUpdate();
 			resultSet = statement.getGeneratedKeys();
 			if(!resultSet.next())
@@ -91,7 +93,7 @@ public class JDBCOrderDAO implements OrderDAO {
 			order.setStatus("Cart");
 			return order;
 		} catch (SQLIntegrityConstraintViolationException e) {
-			throw new UserNotFoundException(order.getUserID(), e);
+			throw new UserNotFoundException(userID, e);
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
 		}
@@ -99,12 +101,12 @@ public class JDBCOrderDAO implements OrderDAO {
 
 	@Override
 	public void updateOrderStatus(int ID, Status orderStatus) throws OrderNotFoundException, DatabaseException{
+		getOrder(ID);
 		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("update arjmart.Order set OrderStatus = ? where OrderID = ?");
 			statement.setString(1, orderStatus.getStatus());
 			statement.setInt(2, ID);
-			if(statement.executeUpdate()==0)
-				throw new OrderNotFoundException(ID);
+			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
 		}

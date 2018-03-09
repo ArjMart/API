@@ -47,12 +47,12 @@ public class JDBCAuthenticationDAO implements AuthenticationDAO {
 	@Override
 	public void authorize(int userID, String role) throws AuthorizationFailedException, DatabaseException {
 		try (Connection connection = connectionFactory.getConnection()) {
-			PreparedStatement statement = connection.prepareStatement("select * from UserRoles where UserID = ? and (Role = ? or Role = 'SuperAdmin')");
+			PreparedStatement statement = connection.prepareStatement("select * from UserRoles where UserID = ? and (Role = ? or Role = '"+Role.SUPER_ADMIN+"')");
 			statement.setInt(1, userID);
 			statement.setString(2, role);
 			ResultSet resultSet = statement.executeQuery();
 			if(!resultSet.next())
-				throw new AuthorizationFailedException();
+				throw new AuthorizationFailedException(userID, role);
 		}catch (SQLException e) {
 			throw new DatabaseException(e);
 		}
