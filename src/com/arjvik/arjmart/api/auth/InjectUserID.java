@@ -4,7 +4,6 @@ import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
@@ -19,7 +18,7 @@ import org.glassfish.hk2.api.AnnotationLiteral;
 @Qualifier
 public @interface InjectUserID {
 	
-	@SuppressWarnings("serial")
+	@SuppressWarnings("all")
 	public static class Instance extends AnnotationLiteral<InjectUserID> implements InjectUserID {
 		
 	}

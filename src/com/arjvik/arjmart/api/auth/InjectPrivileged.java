@@ -17,7 +17,7 @@ import org.glassfish.hk2.api.AnnotationLiteral;
 @Target({ FIELD, METHOD, PARAMETER, CONSTRUCTOR })
 @Qualifier
 public @interface InjectPrivileged {
-	@SuppressWarnings("serial")
+	@SuppressWarnings("all")
 	public static class Instance extends AnnotationLiteral<InjectPrivileged> implements InjectPrivileged {
 		
 	}
