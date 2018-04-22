@@ -29,7 +29,7 @@ public class JDBCUserDAO implements UserDAO {
 			ResultSet resultSet = statement.executeQuery();
 			if(!resultSet.next())
 				throw new UserNotFoundException(ID);
-			return new User(resultSet.getInt("UserID"), resultSet.getString("Email"), null, resultSet.getString("CreditCardNumber"));
+			return new User(resultSet.getInt("UserID"), resultSet.getString("Email"), resultSet.getString("Password"), resultSet.getString("CreditCardNumber"));
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
 		}

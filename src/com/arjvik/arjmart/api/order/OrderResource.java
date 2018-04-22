@@ -3,6 +3,7 @@ package com.arjvik.arjmart.api.order;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -29,6 +30,7 @@ import com.arjvik.arjmart.api.order.checkout.PaymentException;
 
 @Path("/orders")
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class OrderResource {
 	
 	private OrderDAO orderDAO;

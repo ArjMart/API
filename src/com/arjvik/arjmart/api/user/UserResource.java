@@ -1,6 +1,7 @@
 package com.arjvik.arjmart.api.user;
 
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -23,6 +24,7 @@ import com.arjvik.arjmart.api.auth.Role;
 
 @Path("users")
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class UserResource {
 	
 	private UserDAO userDAO;

@@ -22,6 +22,7 @@ import com.arjvik.arjmart.api.item.ItemAttributeNotFoundException;
 
 @Path("/locations")
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class LocationResource {
 	
 	private LocationDAO locationDAO;

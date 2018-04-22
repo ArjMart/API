@@ -57,17 +57,45 @@ public class JDBCItemDAO implements ItemDAO {
 	@Override
 	public List<Item> searchItems(int start, int limit, String query) throws DatabaseException {
 		try (Connection connection = connectionFactory.getConnection()) {
-			PreparedStatement statement = connection.prepareStatement("select * from ItemMaster where ItemName like ? escape '|' limit ? offset ?");
+			PreparedStatement statement = connection.prepareStatement("select * from ItemMaster where ItemName like ? escape '|' or ItemDescription like ? escape '|' order by SKU limit ? offset ?");
 			List<Item> items = new ArrayList<>();
 			String escapedQuery="%"+query.replace("%", "|%").replace("_", "|_").replace(' ', '%')+"%";
 			statement.setString(1, escapedQuery);
-			statement.setInt(2, limit);
-			statement.setInt(3, start);
+			statement.setString(2, escapedQuery);
+			statement.setInt(3, limit);
+			statement.setInt(4, start);
 			ResultSet resultSet = statement.executeQuery();
 			while (resultSet.next()) {
 				items.add(new Item(resultSet.getInt("SKU"), resultSet.getString("ItemName"), resultSet.getString("ItemDescription"), resultSet.getString("ItemThumbnails")));
 			}
 			return items;
+		} catch (SQLException e) {
+			throw new DatabaseException(e);
+		}
+	}
+	
+	@Override
+	public ItemCount getItemCount() throws DatabaseException {
+		try (Connection connection = connectionFactory.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement("select count(*) from ItemMaster");
+			ResultSet resultSet = statement.executeQuery();
+			resultSet.next();
+			return new ItemCount(resultSet.getInt(1));
+		} catch (SQLException e) {
+			throw new DatabaseException(e);
+		}
+	}
+	
+	@Override
+	public ItemCount getItemSearchCount(String query) throws DatabaseException {
+		try (Connection connection = connectionFactory.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement("select count(*) from ItemMaster where ItemName like ? escape '|' or ItemDescription like ? escape '|'");
+			String escapedQuery="%"+query.replace("%", "|%").replace("_", "|_").replace(' ', '%')+"%";
+			statement.setString(1, escapedQuery);
+			statement.setString(2, escapedQuery);
+			ResultSet resultSet = statement.executeQuery();
+			resultSet.next();
+			return new ItemCount(resultSet.getInt(1));
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
 		}

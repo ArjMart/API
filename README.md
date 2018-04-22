@@ -7,9 +7,10 @@ First and foremost, add your database info to 'src/jdbc.properties'. The applica
 ## Technologies
 - JAX-RS
 - Jackson JSON
-- JDBC
+- JDBC (MySQL)
 - HikariCP
 - HK2
+- Slf4j (logging framework)
 
 ## Best Practices
 - All database logic is abstracted away into DAOs

@@ -35,8 +35,8 @@ public class OrderLine {
 	public int getSKU() {
 		return SKU;
 	}
-	public void setSKU(int sKU) {
-		SKU = sKU;
+	public void setSKU(int SKU) {
+		this.SKU = SKU;
 	}
 	public int getItemAttributeID() {
 		return itemAttributeID;

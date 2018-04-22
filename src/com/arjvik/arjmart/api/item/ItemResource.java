@@ -24,6 +24,7 @@ import com.arjvik.arjmart.api.auth.Role;
 
 @Path("items")
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class ItemResource {
 	
 	private static final int MAX_RECORDS = 100;
@@ -78,6 +79,20 @@ public class ItemResource {
 			response.links(next);
 		}
 		return response.build();
+	}
+	
+	@GET
+	@Path("count")
+	public Response getItemCount(@QueryParam("query") String query) throws DatabaseException {
+		if(query!=null)
+			return getItemSearchCount(query);
+		ItemCount count = itemDAO.getItemCount();
+		return Response.ok(count).build();
+	}
+	
+	public Response getItemSearchCount(String query) throws DatabaseException {
+		ItemCount count = itemDAO.getItemSearchCount(query);
+		return Response.ok(count).build();
 	}
 	
 	@GET

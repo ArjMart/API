@@ -89,7 +89,7 @@ public class JDBCOrderDAO implements OrderDAO {
 			resultSet = statement.getGeneratedKeys();
 			if(!resultSet.next())
 				throw new DatabaseException();
-			order.setOrderID(resultSet.getInt(0));
+			order.setOrderID(resultSet.getInt(1));
 			order.setStatus("Cart");
 			return order;
 		} catch (SQLIntegrityConstraintViolationException e) {
