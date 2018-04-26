@@ -12,6 +12,8 @@ public interface OrderDAO {
 	public List<Order> getAllOrdersWithStatus(String status) throws DatabaseException;
 
 	public Order getOrder(int ID) throws OrderNotFoundException, DatabaseException;
+	
+	public OrderTotal getOrderTotal(int ID) throws OrderNotFoundException, DatabaseException;
 
 	public Order getOrAddOrder(int userID) throws UserNotFoundException, DatabaseException;
 

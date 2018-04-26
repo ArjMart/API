@@ -11,7 +11,7 @@ public class InvalidOrderStateExceptionMapper implements ExceptionMapper<Invalid
 
 	@Override
 	public Response toResponse(InvalidOrderStateException e) {
-		return Response.status(Status.NOT_FOUND).entity(new Object(){
+		return Response.status(Status.CONFLICT).entity(new Object(){
 			private String error;
 			private int orderID;
 			private String status;

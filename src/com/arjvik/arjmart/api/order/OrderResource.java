@@ -70,6 +70,18 @@ public class OrderResource {
 		return Response.ok(order).build();
 	}
 	
+	@GET
+	@Path("{ID}/total")
+	@Authorized
+	@Privileged(Role.ORDER_MANAGER)
+	public Response getOrderTotal(@PathParam("ID") int ID, @Context @InjectUserID Integer userID, @Context @InjectPrivileged Boolean isPrivileged) throws AuthorizationFailedException, OrderNotFoundException, DatabaseException {
+		Order order = orderDAO.getOrder(ID);
+		if(!isPrivileged && userID.intValue() != order.getUserID())
+			throw new AuthorizationFailedException(userID, Role.ownerOfOrder(ID));
+		OrderTotal total = orderDAO.getOrderTotal(ID);
+		return Response.ok(total).build();
+	}
+	
 	@POST
 	@Authorized
 	public Response getOrAddCart(@Context @InjectUserID Integer userID) throws UserNotFoundException, DatabaseException {
@@ -197,7 +209,7 @@ public class OrderResource {
 	@Path("{OrderID}/checkout")
 	@Authorized
 	@Privileged(Role.ORDER_MANAGER)
-	public Response checkout(@PathParam("OrderID") int orderID, @Context @InjectUserID Integer userID, @Context @InjectPrivileged Boolean isPrivileged) throws AuthorizationFailedException, OrderNotFoundException, OrderNotFoundException, InvalidOrderStateException, PaymentException, DatabaseException {
+	public Response checkout(@PathParam("OrderID") int orderID, @Context @InjectUserID Integer userID, @Context @InjectPrivileged Boolean isPrivileged) throws AuthorizationFailedException, OrderNotFoundException, InvalidOrderStateException, PaymentException, DatabaseException {
 		if(!isPrivileged){
 			Order order = orderDAO.getOrder(orderID);
 			if(userID.intValue() != order.getUserID())

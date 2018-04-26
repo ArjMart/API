@@ -68,14 +68,29 @@ public class JDBCOrderDAO implements OrderDAO {
 			throw new DatabaseException(e);
 		}
 	}
-
+	
 	@Override
-	public Order getOrAddOrder(int userID) throws UserNotFoundException, DatabaseException {
+	public OrderTotal getOrderTotal(int ID) throws OrderNotFoundException, DatabaseException {
 		try (Connection connection = connectionFactory.getConnection()) {
-			Order order = new Order();
-			order.setUserID(userID);
-			PreparedStatement statement = connection.prepareStatement("select * from arjmart.Order where UserID = ? and OrderStatus = 'Cart' order by OrderID desc limit 1");
-			statement.setInt(1, userID);
+			PreparedStatement statement = connection.prepareStatement("select sum(OrderLine.Quantity * ItemPrice.Price) from OrderLine inner join ItemPrice on OrderLine.SKU = ItemPrice.SKU and OrderLine.ItemAttributeID = ItemPrice.ItemAttributeID where OrderID = ?");
+			statement.setInt(1, ID);
+			ResultSet resultSet = statement.executeQuery();
+			if(!resultSet.next())
+				throw new OrderNotFoundException(ID);
+			double price = resultSet.getDouble(1);
+			return new OrderTotal(price);
+		} catch (SQLException e) {
+			throw new DatabaseException(e);
+		}	
+	}
+	
+		@Override
+		public Order getOrAddOrder(int userID) throws UserNotFoundException, DatabaseException {
+			try (Connection connection = connectionFactory.getConnection()) {
+				Order order = new Order();
+				order.setUserID(userID);
+				PreparedStatement statement = connection.prepareStatement("select * from arjmart.Order where UserID = ? and OrderStatus = 'Cart' order by OrderID desc limit 1");
+				statement.setInt(1, userID);
 			ResultSet resultSet = statement.executeQuery();
 			if(resultSet.next()){
 				order.setOrderID(resultSet.getInt("OrderID"));
