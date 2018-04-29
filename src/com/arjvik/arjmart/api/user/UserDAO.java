@@ -1,6 +1,9 @@
 package com.arjvik.arjmart.api.user;
 
+import java.util.List;
+
 import com.arjvik.arjmart.api.DatabaseException;
+import com.arjvik.arjmart.api.order.Order;
 
 public interface UserDAO {
 
@@ -13,5 +16,7 @@ public interface UserDAO {
 	public boolean authenticate(User user) throws DatabaseException;
 	
 	public void deleteUser(int ID) throws UserNotFoundException, DatabaseException;
+
+	public List<Order> getUserOrders(int ID) throws UserNotFoundException, DatabaseException;
 
 }

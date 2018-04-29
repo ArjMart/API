@@ -5,11 +5,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import com.arjvik.arjmart.api.ConnectionFactory;
 import com.arjvik.arjmart.api.DatabaseException;
+import com.arjvik.arjmart.api.order.Order;
 import com.mysql.jdbc.Statement;
 
 public class JDBCUserDAO implements UserDAO {
@@ -38,7 +41,7 @@ public class JDBCUserDAO implements UserDAO {
 	@Override
 	public int addUser(User user) throws UserAlreadyExistsException, DatabaseException {
 		try (Connection connection = connectionFactory.getConnection()) {
-			PreparedStatement statement = connection.prepareStatement("insert into User (Email, Password, CreditCardNumber) values (?, ?, ?, ?)",Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement statement = connection.prepareStatement("insert into User (Email, Password, CreditCardNumber) values (?, ?, ?)",Statement.RETURN_GENERATED_KEYS);
 			statement.setString(1, user.getEmail());
 			statement.setString(2, user.getPassword());
 			statement.setString(3, user.getCreditCardNumber());
@@ -97,4 +100,20 @@ public class JDBCUserDAO implements UserDAO {
 		}
 	}
 
+	@Override
+	public List<Order> getUserOrders(int ID) throws UserNotFoundException, DatabaseException {
+		getUser(ID);
+		try (Connection connection = connectionFactory.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement("select * from arjmart.Order where UserID = ? and OrderStatus != 'Cart'");
+			statement.setInt(1, ID);
+			ResultSet resultSet = statement.executeQuery();
+			List<Order> orders = new ArrayList<>();
+			while(resultSet.next()){
+				orders.add(new Order (resultSet.getInt("OrderID"), resultSet.getInt("UserID"), resultSet.getString("OrderStatus")));
+			}
+			return orders;
+		} catch (SQLException e) {
+			throw new DatabaseException(e);
+		}
+	}
 }
