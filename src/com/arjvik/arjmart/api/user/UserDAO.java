@@ -9,6 +9,8 @@ public interface UserDAO {
 
 	public User getUser(int ID) throws UserNotFoundException, DatabaseException;
 
+	public User getUserByUUID(int UUID) throws UserNotFoundException, DatabaseException;
+
 	public int addUser(User user) throws UserAlreadyExistsException, DatabaseException;
 
 	public void editUserCreditCardNumber(int ID, User user) throws UserNotFoundException, DatabaseException;

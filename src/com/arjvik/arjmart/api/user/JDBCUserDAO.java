@@ -32,7 +32,21 @@ public class JDBCUserDAO implements UserDAO {
 			ResultSet resultSet = statement.executeQuery();
 			if(!resultSet.next())
 				throw new UserNotFoundException(ID);
-			return new User(resultSet.getInt("UserID"), resultSet.getString("Email"), resultSet.getString("Password"), resultSet.getString("CreditCardNumber"));
+			return new User(resultSet.getInt("UserID"), resultSet.getString("Email"), resultSet.getString("Password"), resultSet.getString("CreditCardNumber"), resultSet.getInt("UUID"));
+		} catch (SQLException e) {
+			throw new DatabaseException(e);
+		}
+	}
+	
+	@Override
+	public User getUserByUUID(int UUID) throws UserNotFoundException, DatabaseException {
+		try (Connection connection = connectionFactory.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement("select * from User where UUID=?");
+			statement.setInt(1, UUID);
+			ResultSet resultSet = statement.executeQuery();
+			if(!resultSet.next())
+				throw new UserNotFoundException(UUID);
+			return new User(resultSet.getInt("UserID"), resultSet.getString("Email"), resultSet.getString("Password"), resultSet.getString("CreditCardNumber"), resultSet.getInt("UUID"));
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
 		}
@@ -41,7 +55,7 @@ public class JDBCUserDAO implements UserDAO {
 	@Override
 	public int addUser(User user) throws UserAlreadyExistsException, DatabaseException {
 		try (Connection connection = connectionFactory.getConnection()) {
-			PreparedStatement statement = connection.prepareStatement("insert into User (Email, Password, CreditCardNumber) values (?, ?, ?)",Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement statement = connection.prepareStatement("insert into User (Email, Password, CreditCardNumber, UUID) values (?, ?, ?, (floor(rand()*900000)+100000))",Statement.RETURN_GENERATED_KEYS);
 			statement.setString(1, user.getEmail());
 			statement.setString(2, user.getPassword());
 			statement.setString(3, user.getCreditCardNumber());
