@@ -54,18 +54,11 @@ public class UserResource {
 		return Response.ok(user).build();
 	}
 	
-	@GET
-	@Path("UUID/{UUID}")
-	public Response getUserBuUUID(@PathParam("UUID") int UUID) throws UserNotFoundException, DatabaseException {
-		User user = userDAO.getUserByUUID(UUID);
-		return Response.ok(user).build();
-	}
-	
 	@POST
-	public Response addUser(User user) throws UserNotFoundException, UserAlreadyExistsException, DatabaseException {
+	public Response addUser(User user) throws UserAlreadyExistsException, DatabaseException {
 		int ID = userDAO.addUser(user);
-		User newUser = userDAO.getUser(ID);
-		return Response.created(UriBuilder.fromMethod(UserResource.class, "getUser").build(ID)).entity(newUser).build();
+		user.setID(ID);
+		return Response.created(UriBuilder.fromMethod(UserResource.class, "getUser").build(ID)).entity(user).build();
 	}
 	
 	@PUT
