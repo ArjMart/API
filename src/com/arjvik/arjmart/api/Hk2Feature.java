@@ -1,6 +1,7 @@
 package com.arjvik.arjmart.api;
 
 import javax.inject.Singleton;
+import javax.jms.Session;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.Provider;
@@ -20,6 +21,9 @@ import com.arjvik.arjmart.api.item.ItemPriceDAO;
 import com.arjvik.arjmart.api.item.JDBCItemAttributeDAO;
 import com.arjvik.arjmart.api.item.JDBCItemDAO;
 import com.arjvik.arjmart.api.item.JDBCItemPriceDAO;
+import com.arjvik.arjmart.api.jms.JMSPipelineRunner;
+import com.arjvik.arjmart.api.jms.JMSSessionProvider;
+import com.arjvik.arjmart.api.jms.PipelineRunner;
 import com.arjvik.arjmart.api.location.InventoryDAO;
 import com.arjvik.arjmart.api.location.JDBCInventoryDAO;
 import com.arjvik.arjmart.api.location.JDBCLocationDAO;
@@ -56,6 +60,8 @@ public class Hk2Feature implements Feature {
         		bind(JDBCAuthenticationDAO.class).to(AuthenticationDAO.class).in(Singleton.class);
         		bind(DummyPaymentDAO.class).to(PaymentDAO.class).in(Singleton.class);
         		bind(HashCodeETagProvider.class).to(ETagProvider.class).in(Singleton.class);
+        		bind(JMSPipelineRunner.class).to(PipelineRunner.class).in(Singleton.class);
+        		bindFactory(JMSSessionProvider.class, Singleton.class).to(Session.class).in(Singleton.class);
         		bindFactory(UserIDProvider.class).to(Integer.class).qualifiedBy(new InjectUserID.Instance()).in(RequestScoped.class);
         		bindFactory(PrivilegedProvider.class).to(Boolean.class).qualifiedBy(new InjectPrivileged.Instance()).in(RequestScoped.class);
         	}
