@@ -1,11 +1,11 @@
 package com.arjvik.arjmart.api.auth;
 
+import java.util.function.Supplier;
+
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 
-import org.glassfish.hk2.api.Factory;
-
-public class UserIDProvider implements Factory<Integer> {
+public class UserIDProvider implements Supplier<Integer> {
 
 	private int userID;
 	
@@ -15,12 +15,7 @@ public class UserIDProvider implements Factory<Integer> {
 	}
 	
 	@Override
-	public void dispose(Integer arg0) {
-		//Do nothing
-	}
-
-	@Override
-	public Integer provide() {
+	public Integer get() {
 		return userID;
 	}
 

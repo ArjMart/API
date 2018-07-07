@@ -1,11 +1,11 @@
 package com.arjvik.arjmart.api.auth;
 
+import java.util.function.Supplier;
+
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 
-import org.glassfish.hk2.api.Factory;
-
-public class PrivilegedProvider implements Factory<Boolean> {
+public class PrivilegedProvider implements Supplier<Boolean> {
 
 	private boolean privileged;
 	
@@ -13,14 +13,9 @@ public class PrivilegedProvider implements Factory<Boolean> {
 	public PrivilegedProvider(ContainerRequestContext ctx){
 		privileged = (boolean) ctx.getProperty("isPrivileged");
 	}
-	
-	@Override
-	public void dispose(Boolean arg0) {
-		//Do nothing
-	}
 
 	@Override
-	public Boolean provide() {
+	public Boolean get() {
 		return privileged;
 	}
 

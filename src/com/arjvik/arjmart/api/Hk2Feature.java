@@ -5,14 +5,14 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.Provider;
 
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
 
 import com.arjvik.arjmart.api.auth.AuthenticationDAO;
 import com.arjvik.arjmart.api.auth.InjectPrivileged;
+import com.arjvik.arjmart.api.auth.InjectUserID;
 import com.arjvik.arjmart.api.auth.JDBCAuthenticationDAO;
 import com.arjvik.arjmart.api.auth.PrivilegedProvider;
-import com.arjvik.arjmart.api.auth.InjectUserID;
 import com.arjvik.arjmart.api.auth.UserIDProvider;
 import com.arjvik.arjmart.api.item.ItemAttributeDAO;
 import com.arjvik.arjmart.api.item.ItemDAO;
