@@ -121,6 +121,7 @@ public class JDBCInventoryDAO implements InventoryDAO {
 			statement.setInt(2, inventory.getSKU());
 			statement.setInt(3, inventory.getItemAttributeID());
 			ResultSet resultSet = statement.executeQuery();
+			resultSet.next();
 			inventory.setQuantity(resultSet.getInt("InventoryAmount"));
 			executeInventoryPipeline(inventory);
 			return inventory;
