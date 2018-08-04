@@ -9,21 +9,26 @@ import javax.inject.Inject;
 
 import com.arjvik.arjmart.api.ConnectionFactory;
 import com.arjvik.arjmart.api.DatabaseException;
+import com.arjvik.arjmart.api.jms.PipelineException;
+import com.arjvik.arjmart.api.jms.PipelineRunner;
+import com.arjvik.arjmart.api.order.Order;
 import com.arjvik.arjmart.api.order.OrderNotFoundException;
 
 public class JDBCCheckoutDAO implements CheckoutDAO {
 	
 	private ConnectionFactory connectionFactory;
 	private PaymentDAO paymentDAO;
+	private PipelineRunner pipelineRunner;
 	
 	@Inject
-	public JDBCCheckoutDAO(ConnectionFactory connectionFactory, PaymentDAO paymentDAO) {
+	public JDBCCheckoutDAO(ConnectionFactory connectionFactory, PaymentDAO paymentDAO, PipelineRunner pipelineRunner) {
 		this.connectionFactory = connectionFactory;
 		this.paymentDAO = paymentDAO;
+		this.pipelineRunner = pipelineRunner;
 	}
 
 	@Override
-	public void checkout(int orderID) throws OrderNotFoundException, InvalidOrderStateException, PaymentException, DatabaseException{
+	public void checkout(int orderID) throws OrderNotFoundException, InvalidOrderStateException, PaymentException, DatabaseException, PipelineException{
 		try (Connection connection = connectionFactory.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement("select * from arjmart.Order where OrderID = ?");
 			statement.setInt(1, orderID);
@@ -34,6 +39,7 @@ public class JDBCCheckoutDAO implements CheckoutDAO {
 			if(!"Cart".equals(status))
 				throw new InvalidOrderStateException(orderID, status);
 			int userID = resultSet.getInt("UserID");
+			
 			
 			statement = connection.prepareStatement("select * from User where UserID = ?");
 			statement.setInt(1, userID);
@@ -52,6 +58,8 @@ public class JDBCCheckoutDAO implements CheckoutDAO {
 			statement = connection.prepareStatement("update arjmart.Order set OrderStatus = 'Pending' where OrderID = ?");
 			statement.setInt(1, orderID);
 			statement.executeUpdate();
+			
+			pipelineRunner.runOrderPlacedPipeline(new Order(orderID, userID, "Pending"));
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
 		}

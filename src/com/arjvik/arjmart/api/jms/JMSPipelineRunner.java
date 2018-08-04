@@ -8,6 +8,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import com.arjvik.arjmart.api.location.Inventory;
+import com.arjvik.arjmart.api.order.Order;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -27,6 +28,22 @@ public class JMSPipelineRunner implements PipelineRunner {
 			MessageProducer producer = session.createProducer(destination);
 			ObjectMapper mapper = new ObjectMapper();
 			String json = mapper.writeValueAsString(inventory);
+			Message message = session.createTextMessage(json);
+			producer.send(message);
+		} catch (JMSException e) {
+			throw new PipelineException(e);
+		} catch (JsonProcessingException e) {
+			throw new PipelineException(e);
+		}
+	}
+	
+	@Override
+	public void runOrderPlacedPipeline(Order order) throws PipelineException {
+		try {
+			Destination destination = session.createQueue("OrderPlaced");
+			MessageProducer producer = session.createProducer(destination);
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(order);
 			Message message = session.createTextMessage(json);
 			producer.send(message);
 		} catch (JMSException e) {

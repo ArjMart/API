@@ -21,6 +21,7 @@ import com.arjvik.arjmart.api.auth.AuthorizationFailedException;
 import com.arjvik.arjmart.api.auth.Authorized;
 import com.arjvik.arjmart.api.auth.InjectPrivileged;
 import com.arjvik.arjmart.api.auth.Role;
+import com.arjvik.arjmart.api.jms.PipelineException;
 import com.arjvik.arjmart.api.auth.InjectUserID;
 import com.arjvik.arjmart.api.auth.Privileged;
 import com.arjvik.arjmart.api.user.UserNotFoundException;
@@ -209,7 +210,7 @@ public class OrderResource {
 	@Path("{OrderID}/checkout")
 	@Authorized
 	@Privileged(Role.ORDER_MANAGER)
-	public Response checkout(@PathParam("OrderID") int orderID, @Context @InjectUserID Integer userID, @Context @InjectPrivileged Boolean isPrivileged) throws AuthorizationFailedException, OrderNotFoundException, InvalidOrderStateException, PaymentException, DatabaseException {
+	public Response checkout(@PathParam("OrderID") int orderID, @Context @InjectUserID Integer userID, @Context @InjectPrivileged Boolean isPrivileged) throws AuthorizationFailedException, OrderNotFoundException, InvalidOrderStateException, PaymentException, DatabaseException, PipelineException {
 		if(!isPrivileged){
 			Order order = orderDAO.getOrder(orderID);
 			if(userID.intValue() != order.getUserID())
