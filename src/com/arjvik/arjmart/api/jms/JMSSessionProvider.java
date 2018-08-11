@@ -27,9 +27,11 @@ public class JMSSessionProvider implements DisposableSupplier<Session> {
 				throw new RuntimeException("Could not read Order Queue connection info, check if jms.properties exists in classpath");
 			properties.load(in);
 			String CONNECTION_URL = properties.getProperty("jmsurl");
+			String USERNAME = properties.getProperty("jmsusername");
+			String PASSWORD = properties.getProperty("jmspassword");
 			if (CONNECTION_URL == null)
 				throw new RuntimeException("Could not read Order Queue connection info, check format of jms.properties ");
-			session = getSession(CONNECTION_URL);
+			session = getSession(CONNECTION_URL, USERNAME, PASSWORD);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (JMSException e) {
@@ -37,8 +39,12 @@ public class JMSSessionProvider implements DisposableSupplier<Session> {
 		}
 	}
 
-	private Session getSession(String CONNECTION_URL) throws JMSException {
-		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(CONNECTION_URL);
+	private Session getSession(String CONNECTION_URL, String USERNAME, String PASSWORD) throws JMSException {
+		ConnectionFactory connectionFactory;
+		if(USERNAME == null || USERNAME.isEmpty())
+			connectionFactory = new ActiveMQConnectionFactory(CONNECTION_URL);
+		else
+			connectionFactory = new ActiveMQConnectionFactory(USERNAME, PASSWORD, CONNECTION_URL);
 		Connection connection = connectionFactory.createConnection();
 		connection.start();
 		this.connection = connection;
