@@ -15,7 +15,6 @@ import de.jupf.staticlog.Log;
 
 public class ConnectionFactory {
 			
-	private static int counter = 1;
 	private HikariDataSource dataSource;
 
 	@Inject
@@ -49,9 +48,6 @@ public class ConnectionFactory {
 	}
 
 	public Connection getConnection() throws SQLException {
-		long start = System.currentTimeMillis();
-		Connection connection = dataSource.getConnection();
-		Log.info(String.format("Getting connection %d takes %.3fs%n", counter++, (System.currentTimeMillis() - start) / 1000d));
-		return connection;
+		return dataSource.getConnection();
 	}
 }
