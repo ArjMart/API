@@ -18,14 +18,18 @@ public class JMSSessionProvider implements DisposableSupplier<Session> {
 	private Connection connection;
 	private Session session;
 	
+	private static Properties properties = null;
+	
 	@Inject
 	public JMSSessionProvider() {
 		try {
-			Properties properties = new Properties();
-			InputStream in = ConnectionFactory.class.getClassLoader().getResourceAsStream("jms.properties");
-			if (in == null)
-				throw new RuntimeException("Could not read Order Queue connection info, check if jms.properties exists in classpath");
-			properties.load(in);
+			if(properties == null) {
+				properties = new Properties();
+				InputStream in = ConnectionFactory.class.getClassLoader().getResourceAsStream("jms.properties");
+				if (in == null)
+					throw new RuntimeException("Could not read Order Queue connection info, check if jms.properties exists in classpath");
+				properties.load(in);
+			}
 			String CONNECTION_URL = properties.getProperty("jmsurl");
 			String USERNAME = properties.getProperty("jmsusername");
 			String PASSWORD = properties.getProperty("jmspassword");

@@ -42,30 +42,30 @@ import com.arjvik.arjmart.api.user.UserDAO;
 @Provider
 public class Hk2Feature implements Feature {
 
-    @Override
-    public boolean configure(FeatureContext context) {
-        context.register(new AbstractBinder() {
+	@Override
+	public boolean configure(FeatureContext context) {
+		context.register(new AbstractBinder() {
 			@Override
-        	protected void configure() {
-        		bind(ConnectionFactory.class).to(ConnectionFactory.class).in(Singleton.class);
-        		bind(JDBCItemDAO.class).to(ItemDAO.class).in(Singleton.class);
-        		bind(JDBCItemAttributeDAO.class).to(ItemAttributeDAO.class).in(Singleton.class);
-        		bind(JDBCItemPriceDAO.class).to(ItemPriceDAO.class).in(Singleton.class);
-        		bind(JDBCLocationDAO.class).to(LocationDAO.class).in(Singleton.class);
-        		bind(JDBCInventoryDAO.class).to(InventoryDAO.class).in(Singleton.class);
-        		bind(JDBCOrderDAO.class).to(OrderDAO.class).in(Singleton.class);
-        		bind(JDBCOrderLineDAO.class).to(OrderLineDAO.class).in(Singleton.class);
-        		bind(JDBCCheckoutDAO.class).to(CheckoutDAO.class).in(Singleton.class);
-        		bind(JDBCUserDAO.class).to(UserDAO.class).in(Singleton.class);
-        		bind(JDBCAuthenticationDAO.class).to(AuthenticationDAO.class).in(Singleton.class);
-        		bind(DummyPaymentDAO.class).to(PaymentDAO.class).in(Singleton.class);
-        		bind(HashCodeETagProvider.class).to(ETagProvider.class).in(Singleton.class);
-        		bind(JMSPipelineRunner.class).to(PipelineRunner.class).in(Singleton.class);
-        		bindFactory(JMSSessionProvider.class, Singleton.class).to(Session.class).in(Singleton.class);
-        		bindFactory(UserIDProvider.class).to(Integer.class).qualifiedBy(new InjectUserID.Instance()).in(RequestScoped.class);
-        		bindFactory(PrivilegedProvider.class).to(Boolean.class).qualifiedBy(new InjectPrivileged.Instance()).in(RequestScoped.class);
-        	}
-        });
-        return true;
-    }
+			protected void configure() {
+				bind(ConnectionFactory.class).to(ConnectionFactory.class).in(Singleton.class);
+				bind(JDBCItemDAO.class).to(ItemDAO.class).in(Singleton.class);
+				bind(JDBCItemAttributeDAO.class).to(ItemAttributeDAO.class).in(Singleton.class);
+				bind(JDBCItemPriceDAO.class).to(ItemPriceDAO.class).in(Singleton.class);
+				bind(JDBCLocationDAO.class).to(LocationDAO.class).in(Singleton.class);
+				bind(JDBCInventoryDAO.class).to(InventoryDAO.class).in(Singleton.class);
+				bind(JDBCOrderDAO.class).to(OrderDAO.class).in(Singleton.class);
+				bind(JDBCOrderLineDAO.class).to(OrderLineDAO.class).in(Singleton.class);
+				bind(JDBCCheckoutDAO.class).to(CheckoutDAO.class).in(Singleton.class);
+				bind(JDBCUserDAO.class).to(UserDAO.class).in(Singleton.class);
+				bind(JDBCAuthenticationDAO.class).to(AuthenticationDAO.class).in(Singleton.class);
+				bind(DummyPaymentDAO.class).to(PaymentDAO.class).in(Singleton.class);
+				bind(HashCodeETagProvider.class).to(ETagProvider.class).in(Singleton.class);
+				bind(JMSPipelineRunner.class).to(PipelineRunner.class).in(Singleton.class);
+				bindFactory(JMSSessionProvider.class, RequestScoped.class).to(Session.class).in(RequestScoped.class);
+				bindFactory(UserIDProvider.class).to(Integer.class).qualifiedBy(new InjectUserID.Instance()).in(Singleton.class);
+				bindFactory(PrivilegedProvider.class).to(Boolean.class).qualifiedBy(new InjectPrivileged.Instance()).in(Singleton.class);
+			}
+		});
+		return true;
+	}
 }
