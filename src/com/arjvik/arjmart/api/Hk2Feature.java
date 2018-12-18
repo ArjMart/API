@@ -62,8 +62,8 @@ public class Hk2Feature implements Feature {
 				bind(HashCodeETagProvider.class).to(ETagProvider.class).in(Singleton.class);
 				bind(JMSPipelineRunner.class).to(PipelineRunner.class).in(Singleton.class);
 				bindFactory(JMSSessionProvider.class, RequestScoped.class).to(Session.class).in(RequestScoped.class);
-				bindFactory(UserIDProvider.class).to(Integer.class).qualifiedBy(new InjectUserID.Instance()).in(Singleton.class);
-				bindFactory(PrivilegedProvider.class).to(Boolean.class).qualifiedBy(new InjectPrivileged.Instance()).in(Singleton.class);
+				bindFactory(UserIDProvider.class).to(Integer.class).qualifiedBy(new InjectUserID.Instance());
+				bindFactory(PrivilegedProvider.class).to(Boolean.class).qualifiedBy(new InjectPrivileged.Instance());
 			}
 		});
 		return true;
