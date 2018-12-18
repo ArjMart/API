@@ -9,8 +9,9 @@ First and foremost, add your database info to 'src/jdbc.properties'. The applica
 - Jackson JSON
 - JDBC (MySQL)
 - HikariCP
-- HK2
+- HK2 Dependency Injection
 - Slf4j (logging framework)
+- JMS (ActiveMQ backend)
 
 ## Best Practices
 - All database logic is abstracted away into DAOs
@@ -20,7 +21,7 @@ First and foremost, add your database info to 'src/jdbc.properties'. The applica
 - Exception handling is delegated to dedicated ExceptionMappers so resource methods only handle best-case scenarios
 
 ## Unit Testing
-- No time to do that as of now. But everything is very testable. DAOs can be replaced with mocks to test resource methods, and Jersey can handle everything else. DAOs themselves can be tested via giving them a mocked ConnectionFactory with connections to a fake in-memory database.
+- Everything is very testable. DAOs can be replaced with mocks to test resource methods, and Jersey can handle everything else. DAOs themselves can be tested via giving them a mocked ConnectionFactory with connections to a fake in-memory database.
 
 ## Questions?
 Email me at arjvik@gmail.com
