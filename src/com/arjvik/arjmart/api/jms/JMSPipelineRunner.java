@@ -26,7 +26,7 @@ public class JMSPipelineRunner implements PipelineRunner {
 	public void runIncommingShipmentPipeline(Inventory inventory) throws PipelineException {
 		try {
 			Session session = sessionProvider.get();
-			Destination destination = session.createQueue("IncomingShipment");
+			Destination destination = session.createQueue("arjmart.IncomingShipment");
 			MessageProducer producer = session.createProducer(destination);
 			ObjectMapper mapper = new ObjectMapper();
 			String json = mapper.writeValueAsString(inventory);
@@ -44,7 +44,7 @@ public class JMSPipelineRunner implements PipelineRunner {
 	public void runOrderPlacedPipeline(Order order) throws PipelineException {
 		try {
 			Session session = sessionProvider.get();
-			Destination destination = session.createQueue("OrderPlaced");
+			Destination destination = session.createQueue("arjmart.OrderPlaced");
 			MessageProducer producer = session.createProducer(destination);
 			ObjectMapper mapper = new ObjectMapper();
 			String json = mapper.writeValueAsString(order);
